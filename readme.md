@@ -12,7 +12,7 @@ For now see [test suite](./__tests__) for usage
 
 ### Queries
 
-Provided query builders emit queries that can be executed by the [operation helpers](#operations). It should be easy to create your own queries and/or higher order builders by manipulating the composite key path.
+Provided query builders emit queries that can be executed by the [operation helpers](#operations). You can create your own query builders and/or higher order builders by manipulating existing builder results.
 
 ##### `get()`
 

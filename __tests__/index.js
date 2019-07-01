@@ -18,7 +18,6 @@ describe('dynamodb', () => {
       describe('create', () => {
         test('basic', async () => {
           const query = queries()
-
           const created = await db.invoke(query.create(['a', 'b'], { foo: 123 }))
 
           // Check that create returns new item
@@ -89,10 +88,11 @@ describe('dynamodb', () => {
 
           // Time passes
           await new Promise(resolve => setTimeout(resolve, 10))
-          const queryAfterTimepasses = queries()
+          const query2 = queries()
 
           // Check that the update returns the new object
-          const created = await db.invoke(queryAfterTimepasses.update(['a', 'b'], { foo: 124 }))
+          const createQuery = query2.update(['a', 'b'], { foo: 124 })
+          const created = await db.invoke(createQuery)
           expect(created).toEqual(
             expect.objectContaining({
               foo: 124,
@@ -106,7 +106,7 @@ describe('dynamodb', () => {
           expect(created.updatedAt).toBeTruthy()
 
           // Check that the new object is persisted
-          const fetched = await db.invoke(queryAfterTimepasses.get(['a', 'b']))
+          const fetched = await db.invoke(query2.get(['a', 'b']))
           expect(fetched).toEqual(
             expect.objectContaining({
               foo: 124,

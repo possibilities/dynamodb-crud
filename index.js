@@ -1,11 +1,11 @@
 const dynamodb = require('aws-dynamodb-axios')
 const chunk = require('./modules/chunk')
-const { unmarshall } = require('aws-dynamodb-axios')
+const { unmarshall, marshall } = require('aws-dynamodb-axios')
 
 const isEmpty = obj => !Object.keys(obj).length
 const upperFirst = str => str[0].toUpperCase() + str.slice(1)
 
-const itemFor = query => unmarshall(Object.values(query).pop().Item)
+const itemFor = query => Object.values(query).pop().Item
 const failedConditionType = 'ConditionalCheckFailedException'
 
 const existsOrNull = async invoking => {
@@ -22,13 +22,36 @@ const existsOrNull = async invoking => {
   }
 }
 
+const marshallRequest = request => {
+  let marshalled = { ...request }
+  if (request.Key) {
+    marshalled = {
+      ...marshalled,
+      Key: marshall(request.Key)
+    }
+  }
+  if (request.Item) {
+    marshalled = {
+      ...marshalled,
+      Item: marshall(request.Item)
+    }
+  }
+  if (request.ExpressionAttributeValues) {
+    marshalled = {
+      ...marshalled,
+      ExpressionAttributeValues: marshall(request.ExpressionAttributeValues)
+    }
+  }
+  return marshalled
+}
+
 const invoke = db => async (query, options = {}) => {
   if (Array.isArray(query)) {
     return Promise.all(query.map(q => invoke(db)(q, options)))
   }
 
   const request = {
-    ...query.request,
+    ...marshallRequest(query.request),
     TableName: process.env.dynamoDbTableName
   }
 
@@ -41,7 +64,7 @@ const invoke = db => async (query, options = {}) => {
     case 'put':
       const putResult = await db.put(request)
       if (putResult === null) return null
-      return unmarshall(request.Item)
+      return query.request.Item
     case 'delete':
       return await existsOrNull(db.delete(request))
         ? {}
@@ -55,7 +78,7 @@ const invoke = db => async (query, options = {}) => {
       if (updateResult === null) return null
       return invoke(db)({
         action: 'get',
-        request: { Key: request.Key }
+        request: { Key: query.request.Key }
       })
   }
 
@@ -68,7 +91,7 @@ const batch = db => async (queries, options = {}) => {
       RequestItems: {
         [process.env.dynamoDbTableName]: queriesChunk.map(
           ({ request, action }) =>
-            ({ [`${upperFirst(action)}Request`]: request })
+            ({ [`${upperFirst(action)}Request`]: marshallRequest(request) })
         )
       }
     })
@@ -86,7 +109,7 @@ const transact = db => async queries => {
     await existsOrNull(db.transactWrite({
       TransactItems: queriesChunk.map(query => ({
         [upperFirst(query.action)]: {
-          ...query.request,
+          ...marshallRequest(query.request),
           TableName: process.env.dynamoDbTableName
         }
       }))

@@ -20,8 +20,8 @@ describe('queries', () => {
           action: 'get',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b.c.d' }
+              hash: 'a.b',
+              range: 'a.b.c.d'
             }
           }
         })
@@ -33,8 +33,8 @@ describe('queries', () => {
           action: 'get',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b.c' }
+              hash: 'a.b',
+              range: 'a.b.c'
             }
           }
         })
@@ -46,8 +46,8 @@ describe('queries', () => {
           action: 'get',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b.c' }
+              hash: 'a.b',
+              range: 'a.b.c'
             },
             ProjectionExpression: 'foo, bar'
           }
@@ -64,11 +64,11 @@ describe('queries', () => {
           action: 'put',
           request: {
             Item: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b.c.d' },
-              foo: { S: 'bar' },
-              createdAt: { S: stamp },
-              updatedAt: { S: stamp }
+              hash: 'a.b',
+              range: 'a.b.c.d',
+              foo: 'bar',
+              createdAt: stamp,
+              updatedAt: stamp
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
             ExpressionAttributeNames: {
@@ -76,8 +76,8 @@ describe('queries', () => {
               '#range': 'range'
             },
             ExpressionAttributeValues: {
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b.c.d' }
+              ':hash': 'a.b',
+              ':range': 'a.b.c.d'
             }
           }
         })
@@ -91,15 +91,15 @@ describe('queries', () => {
 
         // Returns initial stamp
         const query1 = query.create(['a'], { foo: 'bar' })
-        expect(query1.request.Item.createdAt.S).toEqual(stamp)
-        expect(query1.request.Item.updatedAt.S).toEqual(stamp)
+        expect(query1.request.Item.createdAt).toEqual(stamp)
+        expect(query1.request.Item.updatedAt).toEqual(stamp)
 
         clock.tick(10)
 
         // Still returns initial stamp after time passed
         const query2 = query.create(['a'], { foo: 'bar' })
-        expect(query2.request.Item.createdAt.S).toEqual(stamp)
-        expect(query2.request.Item.updatedAt.S).toEqual(stamp)
+        expect(query2.request.Item.createdAt).toEqual(stamp)
+        expect(query2.request.Item.updatedAt).toEqual(stamp)
 
         clock.tick(10)
 
@@ -108,8 +108,8 @@ describe('queries', () => {
         const stamp2 = new Date().toISOString()
 
         const query3 = queries2.create(['a'], { foo: 'bar' })
-        expect(query3.request.Item.createdAt.S).toEqual(stamp2)
-        expect(query3.request.Item.updatedAt.S).toEqual(stamp2)
+        expect(query3.request.Item.createdAt).toEqual(stamp2)
+        expect(query3.request.Item.updatedAt).toEqual(stamp2)
       })
     })
 
@@ -123,8 +123,8 @@ describe('queries', () => {
           action: 'update',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b' }
+              hash: 'a.b',
+              range: 'a.b'
             },
             UpdateExpression: 'set #foo = :foo, #updatedAt = :updatedAt',
             ConditionExpression: '#hash = :hash AND #range = :range',
@@ -135,10 +135,10 @@ describe('queries', () => {
               '#updatedAt': 'updatedAt'
             },
             ExpressionAttributeValues: {
-              ':foo': { S: 'bar' },
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b' },
-              ':updatedAt': { S: stamp }
+              ':foo': 'bar',
+              ':hash': 'a.b',
+              ':range': 'a.b',
+              ':updatedAt': stamp
             }
           }
         })
@@ -152,8 +152,8 @@ describe('queries', () => {
 
         // Create and update stamps
         const query1 = query.create(['a', 'b'], { foo: 'bar' })
-        expect(query1.request.Item.createdAt.S).toEqual(stamp)
-        expect(query1.request.Item.updatedAt.S).toEqual(stamp)
+        expect(query1.request.Item.createdAt).toEqual(stamp)
+        expect(query1.request.Item.updatedAt).toEqual(stamp)
 
         clock.tick(10)
 
@@ -163,8 +163,8 @@ describe('queries', () => {
 
         // Update after time passed reflects in update stamp
         const query2 = queries2.update(['a', 'b'], { foo: 'bar' })
-        expect(query2.request.ExpressionAttributeValues[':updatedAt'].S).not.toEqual(stamp)
-        expect(query2.request.ExpressionAttributeValues[':updatedAt'].S).toEqual(stamp2)
+        expect(query2.request.ExpressionAttributeValues[':updatedAt']).not.toEqual(stamp)
+        expect(query2.request.ExpressionAttributeValues[':updatedAt']).toEqual(stamp2)
       })
     })
 
@@ -177,8 +177,8 @@ describe('queries', () => {
           action: 'delete',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b' }
+              hash: 'a.b',
+              range: 'a.b'
             },
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
@@ -186,8 +186,8 @@ describe('queries', () => {
               '#range': 'range'
             },
             ExpressionAttributeValues: {
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b' }
+              ':hash': 'a.b',
+              ':range': 'a.b'
             }
           }
         })
@@ -204,8 +204,8 @@ describe('queries', () => {
           action: 'delete',
           request: {
             Key: {
-              hash: { S: 'a.b' },
-              range: { S: 'a.b' }
+              hash: 'a.b',
+              range: 'a.b'
             },
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
@@ -213,8 +213,8 @@ describe('queries', () => {
               '#range': 'range'
             },
             ExpressionAttributeValues: {
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b' }
+              ':hash': 'a.b',
+              ':range': 'a.b'
             }
           }
         })
@@ -235,8 +235,8 @@ describe('queries', () => {
               '#range': 'range'
             },
             ExpressionAttributeValues: {
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b' }
+              ':hash': 'a.b',
+              ':range': 'a.b'
             }
           }
         })
@@ -258,8 +258,8 @@ describe('queries', () => {
               '#range': 'range'
             },
             ExpressionAttributeValues: {
-              ':hash': { S: 'a.b' },
-              ':range': { S: 'a.b' }
+              ':hash': 'a.b',
+              ':range': 'a.b'
             }
           }
         })

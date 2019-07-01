@@ -1,4 +1,3 @@
-const { marshall } = require('aws-dynamodb-axios')
 const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
 
@@ -9,7 +8,7 @@ const buildKey = (path, separator) => {
   return { hash, range }
 }
 
-const getKey = ({ hash, range }, context) => marshall({
+const getKey = ({ hash, range }, context) => ({
   [context.hashKeyName]: hash,
   [context.rangeKeyName]: range
 })
@@ -20,10 +19,8 @@ const getExpressionAttributeValues = ({ hashKeyName, rangeKeyName }, body) => {
     [`${hashKeyName}`]: body[hashKeyName],
     [`${rangeKeyName}`]: body[rangeKeyName]
   }
-  return marshall(
-    fromPairs(
-      Object.keys(data).map(key => ([`:${key}`, data[key]]))
-    )
+  return fromPairs(
+    Object.keys(data).map(key => ([`:${key}`, data[key]]))
   )
 }
 
@@ -60,11 +57,9 @@ const create = context =>
       request: {
         Item: {
           ...getKey(key, context),
-          ...marshall({
-            ...body,
-            createdAt: context.stamp,
-            updatedAt: context.stamp
-          })
+          ...body,
+          createdAt: context.stamp,
+          updatedAt: context.stamp
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),
