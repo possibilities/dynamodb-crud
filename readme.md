@@ -1,4 +1,4 @@
-# DynamoDB CRUD client [![CircleCI](https://circleci.com/gh/possibilities/aws-crud.svg?style=svg)](https://circleci.com/gh/possibilities/aws-crud)
+# DynamoDB CRUD client [![CircleCI](https://circleci.com/gh/possibilities/dynamodb-crud.svg?style=svg)](https://circleci.com/gh/possibilities/dynamodb-crud)
 
 An opinionated CRUD client for [AWS DynamoDB](https://aws.amazon.com/dynamodb/) based on [AWS DynamoDb with Axios](https://github.com/possibilities/aws-dynamodb-axios)
 
