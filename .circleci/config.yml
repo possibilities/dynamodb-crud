@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    machine: true
+    steps:
+    - checkout
+    - run: docker-compose up -d
+    - run: docker-compose run node yarn install
+    - run: docker-compose run node yarn lint
+    - run: docker-compose run node yarn test

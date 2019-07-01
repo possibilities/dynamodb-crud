@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  dynamodb:
+    container_name: dynamodb
+    image: dwmkerr/dynamodb
+    command: -port 9987
+    ports:
+    - 9987:9987
+  node:
+    image: node:10
+    working_dir: /code
+    volumes:
+    - ./:/code
+    network_mode: service:dynamodb
