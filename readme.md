@@ -36,8 +36,8 @@ Provided query builders emit queries that can be executed by the [operation help
 
 In addition to the [actions-based API provided by DynamoDb with Axios](https://github.com/possibilities/aws-dynamodb-axios#api) helpers are added for invoking queries generated with the provided query helpers.
 
-###### `invoke(obj|arr)`
+##### `invoke(obj|arr)`
 
-###### `transact(obj|arr)`
+##### `transact(obj|arr)`
 
-###### `batch(arr)`
+##### `batch(arr)`
