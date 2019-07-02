@@ -38,10 +38,10 @@ In addition to the [actions-based API provided by DynamoDb with Axios](https://g
 
 ##### `invoke(obj|arr)`
 
-##### `transactGet(obj|arr)`
-
-##### `transactWrite(obj|arr)`
-
 ##### `batchGet(arr)`
 
 ##### `batchWrite(arr)`
+
+##### `transactGet(obj|arr)`
+
+##### `transactWrite(obj|arr)`
