@@ -1,24 +1,12 @@
 const queries = require('../queries')
-const lolex = require('lolex')
+
+const testContext = {
+  hashKeyName: 'hash',
+  rangeKeyName: 'range',
+  separator: '.'
+}
 
 describe('queries', () => {
-  let clock
-  let testContext
-
-  beforeEach(() => {
-    clock = lolex.install()
-    testContext = {
-      hashKeyName: 'hash',
-      rangeKeyName: 'range',
-      separator: '.',
-      stamp: new Date().toISOString()
-    }
-  })
-
-  afterEach(() => {
-    clock = clock.uninstall()
-  })
-
   describe('operations', () => {
     describe('get', () => {
       test('basic', () => {
@@ -54,7 +42,6 @@ describe('queries', () => {
     describe('create', () => {
       test('basic', () => {
         const query = queries()
-        const stamp = new Date().toISOString()
 
         expect(query.create(['a', 'b', 'c', 'd'], { foo: 'bar' })).toEqual({
           context: testContext,
@@ -64,8 +51,6 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'c.d',
               foo: 'bar',
-              createdAt: stamp,
-              updatedAt: stamp
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
             ExpressionAttributeNames: {
@@ -79,40 +64,10 @@ describe('queries', () => {
           }
         })
       })
-
-      test('timestamps', () => {
-        // Here we're just showing that from each query builder a timestamp
-        // will be generated
-        const query = queries()
-        const stamp = new Date().toISOString()
-
-        // Returns initial stamp
-        const query1 = query.create(['a'], { foo: 'bar' })
-        expect(query1.request.Item.createdAt).toEqual(stamp)
-        expect(query1.request.Item.updatedAt).toEqual(stamp)
-
-        clock.tick(10)
-
-        // Still returns initial stamp after time passed
-        const query2 = query.create(['a'], { foo: 'bar' })
-        expect(query2.request.Item.createdAt).toEqual(stamp)
-        expect(query2.request.Item.updatedAt).toEqual(stamp)
-
-        clock.tick(10)
-
-        // Retuns new stamp given new query builder
-        const queries2 = queries()
-        const stamp2 = new Date().toISOString()
-
-        const query3 = queries2.create(['a'], { foo: 'bar' })
-        expect(query3.request.Item.createdAt).toEqual(stamp2)
-        expect(query3.request.Item.updatedAt).toEqual(stamp2)
-      })
     })
 
     describe('update', () => {
       test('basic', () => {
-        const stamp = new Date().toISOString()
         const query = queries()
         const updateQuery = query.update(['a', 'b'], { foo: 'bar' })
 
@@ -124,45 +79,20 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
-            UpdateExpression: 'set #foo = :foo, #updatedAt = :updatedAt',
+            UpdateExpression: 'set #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range',
               '#foo': 'foo',
-              '#updatedAt': 'updatedAt'
             },
             ExpressionAttributeValues: {
               ':foo': 'bar',
               ':hash': 'a.b',
-              ':range': 'a.b',
-              ':updatedAt': stamp
+              ':range': 'a.b'
             }
           }
         })
-      })
-
-      test('timestamps', () => {
-        // Here we're just showing that from each query builder a timestamp
-        // will be generated
-        const query = queries()
-        const stamp = new Date().toISOString()
-
-        // Create and update stamps
-        const query1 = query.create(['a', 'b'], { foo: 'bar' })
-        expect(query1.request.Item.createdAt).toEqual(stamp)
-        expect(query1.request.Item.updatedAt).toEqual(stamp)
-
-        clock.tick(10)
-
-        // Retuns new stamp given new query builder
-        const queries2 = queries()
-        const stamp2 = new Date().toISOString()
-
-        // Update after time passed reflects in update stamp
-        const query2 = queries2.update(['a', 'b'], { foo: 'bar' })
-        expect(query2.request.ExpressionAttributeValues[':updatedAt']).not.toEqual(stamp)
-        expect(query2.request.ExpressionAttributeValues[':updatedAt']).toEqual(stamp2)
       })
     })
 

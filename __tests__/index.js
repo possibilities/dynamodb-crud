@@ -30,10 +30,6 @@ describe('dynamodb', () => {
             })
           )
 
-          // Check timestamps created
-          expect(created.createdAt).toBeTruthy()
-          expect(created.updatedAt).toBeTruthy()
-
           // Check that new item is persisted
           const fetched = await db.invoke(query.get(['a', 'b']))
           expect(fetched).toEqual(
@@ -43,10 +39,6 @@ describe('dynamodb', () => {
               range: 'a.b'
             })
           )
-
-          // Check timestamps created
-          expect(fetched.createdAt).toBeTruthy()
-          expect(fetched.updatedAt).toBeTruthy()
         })
       })
 
@@ -102,10 +94,6 @@ describe('dynamodb', () => {
             })
           )
 
-          // Check timestamps created
-          expect(created.createdAt).toBeTruthy()
-          expect(created.updatedAt).toBeTruthy()
-
           // Check that the new object is persisted
           const fetched = await db.invoke(query2.get(['a', 'b']))
           expect(fetched).toEqual(
@@ -115,10 +103,6 @@ describe('dynamodb', () => {
               range: 'a.b'
             })
           )
-
-          // Check timestamps created
-          expect(fetched.createdAt).toBeTruthy()
-          expect(fetched.updatedAt).toBeTruthy()
         })
 
         test('non-existent item', async () => {

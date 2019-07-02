@@ -53,8 +53,6 @@ const create = context =>
         Item: {
           ...getKey(resolvedKey, context),
           ...body,
-          createdAt: context.stamp,
-          updatedAt: context.stamp
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),
@@ -88,16 +86,15 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
 const update = context =>
   (key, body) => {
     const resolvedKey = resolveKey(key, context.separator)
-    const data = { ...body, updatedAt: context.stamp }
     return {
       context,
       action: 'update',
       request: {
         Key: getKey(resolvedKey, context),
-        UpdateExpression: getUpdateExpression(context, data),
+        UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
-        ExpressionAttributeNames: getAttributeNames(context, data),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, { ...resolvedKey, ...data })
+        ExpressionAttributeNames: getAttributeNames(context, body),
+        ExpressionAttributeValues: getExpressionAttributeValues(context, { ...resolvedKey, ...body })
       }
     }
   }
@@ -148,8 +145,7 @@ const queries = ({
   hashKeyName = 'hash',
   rangeKeyName = 'range'
 } = {}) => {
-  const stamp = new Date().toISOString()
-  const context = { stamp, hashKeyName, rangeKeyName, separator }
+  const context = { hashKeyName, rangeKeyName, separator }
   return {
     create: create(context),
     get: get(context),
