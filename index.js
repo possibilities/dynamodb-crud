@@ -179,7 +179,7 @@ const crud = (config = {}) => {
     transactGet: transactGet(db, config),
     transactWrite: transactWrite(db, config),
     batchWrite: batchWrite(db, config),
-    batchGet: batchGet(db, config),
+    batchGet: batchGet(db, config)
   }
 }
 

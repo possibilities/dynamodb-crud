@@ -102,7 +102,7 @@ describe('dynamodb', () => {
 
           expect(await db.invoke(query.list(['a', 'b', 'c']))).toEqual([
             { foo: 123 },
-            { foo: 124 },
+            { foo: 124 }
           ])
 
           expect(await db.invoke(query.list(['a', 'b', 'd']))).toEqual([
@@ -191,7 +191,7 @@ describe('dynamodb', () => {
 
       expect(items).toEqual([
         { foo: 123 },
-        { foo: 124 },
+        { foo: 124 }
       ])
     })
   })

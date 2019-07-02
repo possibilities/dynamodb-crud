@@ -52,7 +52,7 @@ const create = context =>
       request: {
         Item: {
           ...getKey(resolvedKey, context),
-          ...body,
+          ...body
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),

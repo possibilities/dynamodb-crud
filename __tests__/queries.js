@@ -50,7 +50,7 @@ describe('queries', () => {
             Item: {
               hash: 'a.b',
               range: 'c.d',
-              foo: 'bar',
+              foo: 'bar'
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
             ExpressionAttributeNames: {
@@ -84,7 +84,7 @@ describe('queries', () => {
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range',
-              '#foo': 'foo',
+              '#foo': 'foo'
             },
             ExpressionAttributeValues: {
               ':foo': 'bar',
