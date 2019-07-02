@@ -141,6 +141,25 @@ describe('dynamodb', () => {
     })
   })
 
+  describe('batchGet', () => {
+    test('basic', async () => {
+      const query = queries()
+
+      await db.batchWrite([
+        query.create(['a', 'b'], { foo: 123 }),
+        query.create(['a', 'c'], { foo: 124 })
+      ])
+
+      const items = await db.batchGet([
+        query.get(['a', 'b']),
+        query.get(['a', 'c'])
+      ])
+
+      // Order not guaranteed
+      expect(items.map(item => item.foo).sort()).toEqual([123, 124])
+    })
+  })
+
   describe('batchWrite', () => {
     test('basic', async () => {
       const query = queries()
@@ -153,6 +172,27 @@ describe('dynamodb', () => {
       expect(await db.invoke(query.get(['a', 'c']))).not.toBeNull()
       // Check false positive
       expect(await db.invoke(query.get(['a', 'x']))).toBeNull()
+    })
+  })
+
+  describe('transactGet', () => {
+    test('basic', async () => {
+      const query = queries()
+
+      await db.transactWrite([
+        query.create(['a', 'b'], { foo: 123 }),
+        query.create(['a', 'c'], { foo: 124 })
+      ])
+
+      const items = await db.transactGet([
+        query.get(['a', 'b']),
+        query.get(['a', 'c'])
+      ])
+
+      expect(items).toEqual([
+        { foo: 123 },
+        { foo: 124 },
+      ])
     })
   })
 

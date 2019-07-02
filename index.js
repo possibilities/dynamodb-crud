@@ -6,7 +6,7 @@ const { unmarshall, marshall } = require('aws-dynamodb-axios')
 const isEmpty = obj => !Object.keys(obj).length
 const upperFirst = str => str[0].toUpperCase() + str.slice(1)
 
-const itemFor = query => Object.values(query).pop().Item
+const extractItem = query => Object.values(query).pop().Item
 const failedConditionType = 'ConditionalCheckFailedException'
 
 const existsOrNull = async invoking => {
@@ -101,7 +101,52 @@ const batchWrite = (db, config = {}) => async (queries, options = {}) => {
       }
     })
   }
-  return queries.map(itemFor)
+  return queries.map(extractItem)
+}
+
+const batchGet = (db, config = {}) => async (queries, options = {}) => {
+  // Use corresponding context for each query
+  const context = queries[0].context
+  let items = []
+  for (const queriesChunk of chunk(queries, 25)) {
+    const responses = await db.batchGet({
+      RequestItems: {
+        [config.tableName]: {
+          Keys: queriesChunk.map(
+            ({ request, action }) => marshall(request.Key)
+          )
+        }
+      }
+    })
+    items = [
+      ...items,
+      ...responses.Responses[config.tableName]
+    ]
+  }
+  return items.map(item => itemView(unmarshall(item), context))
+}
+
+const transactGet = (db, config = {}) => async (queries, options = {}) => {
+  // Use corresponding context for each query
+  const context = queries[0].context
+  let items = []
+  for (const queriesChunk of chunk(queries, 25)) {
+    const responses = await db.transactGet({
+      TransactItems: queriesChunk.map(
+        ({ request, action }) => ({
+          Get: {
+            Key: marshall(request.Key),
+            TableName: config.tableName
+          }
+        })
+      )
+    })
+    items = [
+      ...items,
+      ...responses.Responses
+    ]
+  }
+  return items.map(item => itemView(unmarshall(item.Item), context))
 }
 
 const ensureArray = arr => Array.isArray(arr)
@@ -120,15 +165,17 @@ const transactWrite = (db, config = {}) => async queries => {
       }))
     }))
   }
-  return queriesArr.map(itemFor)
+  return queriesArr.map(extractItem)
 }
 
 const crud = (config = {}) => {
   const db = dynamodb(config)
   return {
     invoke: invoke(db, config),
+    transactGet: transactGet(db, config),
     transactWrite: transactWrite(db, config),
     batchWrite: batchWrite(db, config),
+    batchGet: batchGet(db, config),
   }
 }
 
