@@ -1,6 +1,6 @@
 const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
-const buildKey = require('./modules/buildKey')
+const resolveKey = require('./modules/resolveKey')
 
 const getKey = ({ hash, range }, context) => ({
   [context.hashKeyName]: hash,
@@ -44,29 +44,29 @@ const getKeyConditionExpression = context =>
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
 const create = context =>
-  (path, body) => {
-    const key = buildKey(path, context.separator)
+  (key, body) => {
+    const resolvedKey = resolveKey(key, context.separator)
     return {
       action: 'put',
       request: {
         Item: {
-          ...getKey(key, context),
+          ...getKey(resolvedKey, context),
           ...body,
           createdAt: context.stamp,
           updatedAt: context.stamp
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, key)
+        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
       }
     }
   }
 
 const get = context =>
-  (path, options = {}) => {
-    const key = buildKey(path, context.separator)
+  (key, options = {}) => {
+    const resolvedKey = resolveKey(key, context.separator)
 
-    let request = { Key: getKey(key, context) }
+    let request = { Key: getKey(resolvedKey, context) }
     if (options.keys) {
       request = {
         ...request,
@@ -85,53 +85,53 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
 }
 
 const update = context =>
-  (path, body) => {
-    const key = buildKey(path, context.separator)
+  (key, body) => {
+    const resolvedKey = resolveKey(key, context.separator)
     const data = { ...body, updatedAt: context.stamp }
     return {
       action: 'update',
       request: {
-        Key: getKey(key, context),
+        Key: getKey(resolvedKey, context),
         UpdateExpression: getUpdateExpression(context, data),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, data),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, { ...key, ...data })
+        ExpressionAttributeValues: getExpressionAttributeValues(context, { ...resolvedKey, ...data })
       }
     }
   }
 
 const remove = context => {
-  return path => {
-    const key = buildKey(path, context.separator)
+  return key => {
+    const resolvedKey = resolveKey(key, context.separator)
     return {
       action: 'delete',
       request: {
-        Key: getKey(key, context),
+        Key: getKey(resolvedKey, context),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, key)
+        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
       }
     }
   }
 }
 
 const list = context =>
-  path => {
-    const key = buildKey(path, context.separator)
+  key => {
+    const resolvedKey = resolveKey(key, context.separator)
     return {
       action: 'query',
       request: {
         KeyConditionExpression: getKeyConditionExpression(context),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, key)
+        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
       }
     }
   }
 
 const count = context => {
   const buildListQuery = list(context)
-  return path => {
-    const listQuery = buildListQuery(path)
+  return key => {
+    const listQuery = buildListQuery(key)
     return {
       ...listQuery,
       request: { ...listQuery.request, Select: 'COUNT' }
