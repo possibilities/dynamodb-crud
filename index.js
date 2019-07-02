@@ -45,14 +45,14 @@ const marshallRequest = request => {
   return marshalled
 }
 
-const invoke = db => async (query, options = {}) => {
+const invoke = (db, config = {}) => async (query, options = {}) => {
   if (Array.isArray(query)) {
-    return Promise.all(query.map(q => invoke(db)(q, options)))
+    return Promise.all(query.map(q => invoke(db, config)(q, options)))
   }
 
   const request = {
     ...marshallRequest(query.request),
-    TableName: process.env.dynamoDbTableName
+    TableName: config.tableName
   }
 
   switch (query.action) {
@@ -76,7 +76,7 @@ const invoke = db => async (query, options = {}) => {
     case 'update':
       const updateResult = await existsOrNull(db.update(request))
       if (updateResult === null) return null
-      return invoke(db)({
+      return invoke(db, config)({
         action: 'get',
         request: { Key: query.request.Key }
       })
@@ -85,11 +85,11 @@ const invoke = db => async (query, options = {}) => {
   throw new Error(`query does not support ${query.action} action`)
 }
 
-const batch = db => async (queries, options = {}) => {
+const batch = (db, config = {}) => async (queries, options = {}) => {
   for (const queriesChunk of chunk(queries, 25)) {
     await db.batchWrite({
       RequestItems: {
-        [process.env.dynamoDbTableName]: queriesChunk.map(
+        [config.tableName]: queriesChunk.map(
           ({ request, action }) =>
             ({ [`${upperFirst(action)}Request`]: marshallRequest(request) })
         )
@@ -103,14 +103,14 @@ const ensureArray = arr => Array.isArray(arr)
   ? arr
   : [arr]
 
-const transact = db => async queries => {
+const transact = (db, config = {}) => async queries => {
   const queriesArr = ensureArray(queries)
   for (const queriesChunk of chunk(queriesArr, 25)) {
     await existsOrNull(db.transactWrite({
       TransactItems: queriesChunk.map(query => ({
         [upperFirst(query.action)]: {
           ...marshallRequest(query.request),
-          TableName: process.env.dynamoDbTableName
+          TableName: config.tableName
         }
       }))
     }))
@@ -118,12 +118,12 @@ const transact = db => async queries => {
   return queriesArr.map(itemFor)
 }
 
-const crud = (options = {}) => {
-  const db = dynamodb(options)
+const crud = (config = {}) => {
+  const db = dynamodb(config)
   return {
-    batch: batch(db),
-    invoke: invoke(db),
-    transact: transact(db)
+    batch: batch(db, config),
+    invoke: invoke(db, config),
+    transact: transact(db, config)
   }
 }
 

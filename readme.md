@@ -30,7 +30,7 @@ Provided query builders emit queries that can be executed by the [operation help
 
 #### Configure
 
-##### `dynamodb()`
+##### `dynamodb(obj)`
 
 #### Operations
 

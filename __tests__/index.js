@@ -7,7 +7,8 @@ describe('dynamodb', () => {
   beforeEach(async () => {
     db = dynamodb({
       region: process.env.dynamoDbRegion,
-      host: process.env.dynamoDbHost
+      host: process.env.dynamoDbHost,
+      tableName: process.env.dynamoDbTableName
     })
 
     await clearDatabase(process.env.dynamoDbTableName)
