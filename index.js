@@ -65,18 +65,25 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
       return isEmpty(getResult)
         ? null
         : itemView(unmarshall(getResult.Item), query.context)
+
     case 'put':
       const putResult = await db.put(request)
       if (putResult === null) return null
       return itemView(query.request.Item, query.context)
+
     case 'delete':
       return await existsOrNull(db.delete(request))
         ? {}
         : null
+
     case 'query':
       const getItems = await db.query(request)
-      if (!getItems.Items && getItems.Count !== undefined) return getItems.Count
-      return unmarshall(getItems.Items).map(item => itemView(item, query.context))
+      if (!getItems.Items && getItems.Count !== undefined) {
+        return getItems.Count
+      }
+      return unmarshall(getItems.Items)
+        .map(item => itemView(item, query.context))
+
     case 'update':
       const updateResult = await existsOrNull(db.update(request))
       if (updateResult === null) return null
@@ -105,8 +112,6 @@ const batchWrite = (db, config = {}) => async (queries, options = {}) => {
 }
 
 const batchGet = (db, config = {}) => async (queries, options = {}) => {
-  // Use corresponding context for each query
-  const context = queries[0].context
   let items = []
   for (const queriesChunk of chunk(queries, 25)) {
     const responses = await db.batchGet({
@@ -118,17 +123,16 @@ const batchGet = (db, config = {}) => async (queries, options = {}) => {
         }
       }
     })
-    items = [
-      ...items,
-      ...responses.Responses[config.tableName]
-    ]
+    items = [...items, ...responses.Responses[config.tableName]]
   }
-  return items.map(item => itemView(unmarshall(item), context))
+
+  return items.map((item, index) => itemView(
+    unmarshall(item),
+    queries[index].context)
+  )
 }
 
 const transactGet = (db, config = {}) => async (queries, options = {}) => {
-  // Use corresponding context for each query
-  const context = queries[0].context
   let items = []
   for (const queriesChunk of chunk(queries, 25)) {
     const responses = await db.transactGet({
@@ -141,12 +145,12 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
         })
       )
     })
-    items = [
-      ...items,
-      ...responses.Responses
-    ]
+    items = [...items, ...responses.Responses]
   }
-  return items.map(item => itemView(unmarshall(item.Item), context))
+  return items.map((item, index) => itemView(
+    unmarshall(item.Item),
+    queries[index].context)
+  )
 }
 
 const ensureArray = arr => Array.isArray(arr)
