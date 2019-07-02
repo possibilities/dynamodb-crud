@@ -213,9 +213,14 @@ describe('dynamodb', () => {
     test('basic', async () => {
       const query = queries()
 
-      await db.transactWrite([
+      const items = await db.transactWrite([
         query.create(['a', 'b'], { foo: 123 }),
         query.create(['a', 'c'], { foo: 124 })
+      ])
+
+      expect(items).toEqual([
+        { foo: 123 },
+        { foo: 124 }
       ])
 
       expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
@@ -227,7 +232,9 @@ describe('dynamodb', () => {
     test('single query', async () => {
       const query = queries()
 
-      await db.transactWrite(query.create(['a', 'b'], { foo: 123 }))
+      const item =
+        await db.transactWrite(query.create(['a', 'b'], { foo: 123 }))
+      expect(item).toEqual({ foo: 123 })
 
       expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
       // Check false positive

@@ -166,6 +166,7 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
 
 const transactWrite = (db, config = {}) => async queries => {
   const queriesArr = ensureArray(queries)
+
   for (const queriesChunk of chunk(queriesArr, 25)) {
     await existsOrNull(db.transactWrite({
       TransactItems: queriesChunk.map(query => ({
@@ -176,7 +177,17 @@ const transactWrite = (db, config = {}) => async queries => {
       }))
     }))
   }
-  return queriesArr.map(extractItem)
+
+  const preparedItems = queriesArr
+    .map((item, index) => itemView(
+      extractItem(item),
+      queriesArr[index].context
+    )
+  )
+
+  return queriesArr.length > 1
+    ? preparedItems
+    : preparedItems.pop()
 }
 
 const crud = (config = {}) => {
