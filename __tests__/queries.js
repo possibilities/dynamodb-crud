@@ -16,25 +16,12 @@ describe('queries', () => {
     describe('get', () => {
       test('basic', () => {
         const query = queries()
-        expect(query.get(['a', 'b', 'c', 'd'])).toEqual({
+        expect(query.get(['a', 'b'])).toEqual({
           action: 'get',
           request: {
             Key: {
               hash: 'a.b',
-              range: 'a.b.c.d'
-            }
-          }
-        })
-      })
-
-      test('child entity', () => {
-        const query = queries()
-        expect(query.get(['a', 'b', 'c'])).toEqual({
-          action: 'get',
-          request: {
-            Key: {
-              hash: 'a.b',
-              range: 'a.b.c'
+              range: 'a.b'
             }
           }
         })
@@ -42,12 +29,12 @@ describe('queries', () => {
 
       test('with `keys`', () => {
         const query = queries()
-        expect(query.get(['a', 'b', 'c'], { keys: ['foo', 'bar'] })).toEqual({
+        expect(query.get(['a', 'b'], { keys: ['foo', 'bar'] })).toEqual({
           action: 'get',
           request: {
             Key: {
               hash: 'a.b',
-              range: 'a.b.c'
+              range: 'a.b'
             },
             ProjectionExpression: 'foo, bar'
           }

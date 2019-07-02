@@ -1,12 +1,6 @@
 const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
-
-const buildKey = (path, separator) => {
-  const [resource, subjectId] = path
-  const hash = [resource, subjectId].join(separator)
-  const range = path.join(separator)
-  return { hash, range }
-}
+const buildKey = require('./modules/buildKey')
 
 const getKey = ({ hash, range }, context) => ({
   [context.hashKeyName]: hash,
