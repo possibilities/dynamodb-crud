@@ -57,7 +57,10 @@ const create = context =>
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
+        ExpressionAttributeValues: getExpressionAttributeValues(
+          context,
+          resolvedKey
+        )
       }
     }
   }
@@ -84,7 +87,7 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
   return `set ${nameExpressions}`
 }
 
-const update = context =>
+const patch = context =>
   (key, body) => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
@@ -96,12 +99,15 @@ const update = context =>
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, body),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, { ...resolvedKey, ...body })
+        ExpressionAttributeValues: getExpressionAttributeValues(
+          context,
+          { ...resolvedKey, ...body }
+        )
       }
     }
   }
 
-const remove = context => {
+const destroy = context => {
   return key => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
@@ -111,7 +117,10 @@ const remove = context => {
         Key: getKey(resolvedKey, context),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
+        ExpressionAttributeValues: getExpressionAttributeValues(
+          context,
+          resolvedKey
+        )
       }
     }
   }
@@ -126,7 +135,10 @@ const list = context =>
       request: {
         KeyConditionExpression: getKeyConditionExpression(context),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(context, resolvedKey)
+        ExpressionAttributeValues: getExpressionAttributeValues(
+          context,
+          resolvedKey
+        )
       }
     }
   }
@@ -151,8 +163,8 @@ const queries = ({
   return {
     create: create(context),
     get: get(context),
-    update: update(context),
-    remove: remove(context),
+    patch: patch(context),
+    destroy: destroy(context),
     list: list(context),
     count: count(context)
   }

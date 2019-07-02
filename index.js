@@ -89,8 +89,8 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
         .map(item => itemView(item, query.context))
 
     case 'update':
-      const updateResult = await existsOrNull(db.update(request))
-      if (updateResult === null) return null
+      const patchResult = await existsOrNull(db.update(request))
+      if (patchResult === null) return null
       return invoke(db, config)({
         action: 'get',
         context: query.context,

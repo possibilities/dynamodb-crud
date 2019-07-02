@@ -67,12 +67,12 @@ describe('queries', () => {
       })
     })
 
-    describe('update', () => {
+    describe('patch', () => {
       test('basic', () => {
         const query = queries()
-        const updateQuery = query.update(['a', 'b'], { foo: 'bar' })
+        const patchQuery = query.patch(['a', 'b'], { foo: 'bar' })
 
-        expect(updateQuery).toEqual({
+        expect(patchQuery).toEqual({
           body: { foo: 'bar' },
           context: testContext,
           action: 'update',
@@ -98,12 +98,12 @@ describe('queries', () => {
       })
     })
 
-    describe('remove', () => {
+    describe('destroy', () => {
       test('basic', () => {
         const query = queries()
-        const removeQuery = query.remove(['a', 'b'])
+        const destroyQuery = query.destroy(['a', 'b'])
 
-        expect(removeQuery).toEqual({
+        expect(destroyQuery).toEqual({
           action: 'delete',
           context: testContext,
           request: {
@@ -126,12 +126,12 @@ describe('queries', () => {
 
       test('existing entity', () => {
         const query = queries()
-        const removeQuery = query.remove({
+        const destroyQuery = query.destroy({
           hash: 'a.b',
           range: 'a.b'
         })
 
-        expect(removeQuery).toEqual({
+        expect(destroyQuery).toEqual({
           context: testContext,
           action: 'delete',
           request: {

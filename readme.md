@@ -18,9 +18,9 @@ Provided query builders emit queries that can be executed by the [operation help
 
 ##### `create()`
 
-##### `update()`
+##### `patch()`
 
-##### `remove()`
+##### `destroy()`
 
 ##### `list()`
 
