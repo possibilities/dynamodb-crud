@@ -44,6 +44,7 @@ describe('queries', () => {
         const query = queries()
 
         expect(query.create(['a', 'b', 'c', 'd'], { foo: 'bar' })).toEqual({
+          body: { foo: 'bar' },
           context: testContext,
           action: 'put',
           request: {
@@ -72,6 +73,7 @@ describe('queries', () => {
         const updateQuery = query.update(['a', 'b'], { foo: 'bar' })
 
         expect(updateQuery).toEqual({
+          body: { foo: 'bar' },
           context: testContext,
           action: 'update',
           request: {

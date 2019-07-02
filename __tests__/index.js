@@ -229,6 +229,30 @@ describe('dynamodb', () => {
       expect(await db.invoke(query.get(['a', 'x']))).toBeNull()
     })
 
+    test('update', async () => {
+      const query = queries()
+
+      const itemsCreated = await db.transactWrite([
+        query.create(['a', 'b'], { foo: 123 }),
+        query.create(['a', 'c'], { foo: 124 })
+      ])
+
+      expect(itemsCreated).toEqual([
+        { foo: 123 },
+        { foo: 124 }
+      ])
+
+      const itemsFetched = await db.transactWrite([
+        query.update(['a', 'b'], { foo: 125 }),
+        query.update(['a', 'c'], { foo: 126 })
+      ])
+
+      expect(itemsFetched).toEqual([
+        { foo: 125 },
+        { foo: 126 }
+      ])
+    })
+
     test('single query', async () => {
       const query = queries()
 

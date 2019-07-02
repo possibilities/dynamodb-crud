@@ -73,7 +73,7 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
     case 'put':
       const putResult = await db.put(request)
       if (putResult === null) return null
-      return itemView(query.request.Item, query.context)
+      return query.body
 
     case 'delete':
       return await existsOrNull(db.delete(request))
@@ -112,7 +112,7 @@ const batchWrite = (db, config = {}) => async (queries, options = {}) => {
       }
     })
   }
-  return queries.map(extractItem)
+  return queries.map(q => q.body)
 }
 
 const batchGet = (db, config = {}) => async (queries, options = {}) => {
@@ -167,8 +167,9 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
 const transactWrite = (db, config = {}) => async queries => {
   const queriesArr = ensureArray(queries)
 
+  let hasNulls = false
   for (const queriesChunk of chunk(queriesArr, 25)) {
-    await existsOrNull(db.transactWrite({
+    const responses = await existsOrNull(db.transactWrite({
       TransactItems: queriesChunk.map(query => ({
         [upperFirst(query.action)]: {
           ...marshallRequest(query.request),
@@ -176,18 +177,18 @@ const transactWrite = (db, config = {}) => async queries => {
         }
       }))
     }))
+
+    if (responses === null) {
+      hasNulls = true
+      break
+    }
   }
 
-  const preparedItems = queriesArr
-    .map((item, index) => itemView(
-      extractItem(item),
-      queriesArr[index].context
-    )
-  )
-
+  if (hasNulls) return null
+  const bodies = queriesArr.map(q => q.body)
   return queriesArr.length > 1
-    ? preparedItems
-    : preparedItems.pop()
+    ? bodies
+    : bodies.pop()
 }
 
 const crud = (config = {}) => {

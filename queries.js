@@ -47,6 +47,7 @@ const create = context =>
   (key, body) => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
+      body,
       context,
       action: 'put',
       request: {
@@ -87,6 +88,7 @@ const update = context =>
   (key, body) => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
+      body,
       context,
       action: 'update',
       request: {
