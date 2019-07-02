@@ -49,6 +49,10 @@ const marshallRequest = request => {
 const itemView = (item, context) =>
   omit(item, [context.hashKeyName, context.rangeKeyName])
 
+const ensureArray = arr => Array.isArray(arr)
+  ? arr
+  : [arr]
+
 const invoke = (db, config = {}) => async (query, options = {}) => {
   if (Array.isArray(query)) {
     return Promise.all(query.map(q => invoke(db, config)(q, options)))
@@ -134,7 +138,9 @@ const batchGet = (db, config = {}) => async (queries, options = {}) => {
 
 const transactGet = (db, config = {}) => async (queries, options = {}) => {
   let items = []
-  for (const queriesChunk of chunk(queries, 25)) {
+
+  const queriesArr = ensureArray(queries)
+  for (const queriesChunk of chunk(queriesArr, 25)) {
     const responses = await db.transactGet({
       TransactItems: queriesChunk.map(
         ({ request, action }) => ({
@@ -147,15 +153,16 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
     })
     items = [...items, ...responses.Responses]
   }
-  return items.map((item, index) => itemView(
-    unmarshall(item.Item),
-    queries[index].context)
-  )
-}
 
-const ensureArray = arr => Array.isArray(arr)
-  ? arr
-  : [arr]
+  const preparedItems = items.map((item, index) => itemView(
+    unmarshall(item.Item),
+    queriesArr[index].context)
+  )
+
+  return queries.length > 1
+    ? preparedItems
+    : preparedItems.pop()
+}
 
 const transactWrite = (db, config = {}) => async queries => {
   const queriesArr = ensureArray(queries)

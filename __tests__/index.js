@@ -194,6 +194,19 @@ describe('dynamodb', () => {
         { foo: 124 }
       ])
     })
+
+    test('single query', async () => {
+      const query = queries()
+
+      await db.transactWrite([
+        query.create(['a', 'b'], { foo: 123 }),
+        query.create(['a', 'c'], { foo: 124 })
+      ])
+
+      const item = await db.transactGet(query.get(['a', 'b']))
+
+      expect(item).toEqual({ foo: 123 })
+    })
   })
 
   describe('transactWrite', () => {
