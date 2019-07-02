@@ -2,21 +2,29 @@ const queries = require('../queries')
 const lolex = require('lolex')
 
 describe('queries', () => {
+  let clock
+  let testContext
+
+  beforeEach(() => {
+    clock = lolex.install()
+    testContext = {
+      hashKeyName: 'hash',
+      rangeKeyName: 'range',
+      separator: '.',
+      stamp: new Date().toISOString()
+    }
+  })
+
+  afterEach(() => {
+    clock = clock.uninstall()
+  })
+
   describe('operations', () => {
-    let clock
-
-    beforeEach(() => {
-      clock = lolex.install()
-    })
-
-    afterEach(() => {
-      clock = clock.uninstall()
-    })
-
     describe('get', () => {
       test('basic', () => {
         const query = queries()
         expect(query.get(['a', 'b'])).toEqual({
+          context: testContext,
           action: 'get',
           request: {
             Key: {
@@ -30,6 +38,7 @@ describe('queries', () => {
       test('with `keys`', () => {
         const query = queries()
         expect(query.get(['a', 'b'], { keys: ['foo', 'bar'] })).toEqual({
+          context: testContext,
           action: 'get',
           request: {
             Key: {
@@ -48,6 +57,7 @@ describe('queries', () => {
         const stamp = new Date().toISOString()
 
         expect(query.create(['a', 'b', 'c', 'd'], { foo: 'bar' })).toEqual({
+          context: testContext,
           action: 'put',
           request: {
             Item: {
@@ -107,6 +117,7 @@ describe('queries', () => {
         const updateQuery = query.update(['a', 'b'], { foo: 'bar' })
 
         expect(updateQuery).toEqual({
+          context: testContext,
           action: 'update',
           request: {
             Key: {
@@ -162,6 +173,7 @@ describe('queries', () => {
 
         expect(removeQuery).toEqual({
           action: 'delete',
+          context: testContext,
           request: {
             Key: {
               hash: 'a.b',
@@ -188,6 +200,7 @@ describe('queries', () => {
         })
 
         expect(removeQuery).toEqual({
+          context: testContext,
           action: 'delete',
           request: {
             Key: {
@@ -214,6 +227,7 @@ describe('queries', () => {
         const listQuery = query.list(['a', 'b'])
 
         expect(listQuery).toEqual({
+          context: testContext,
           action: 'query',
           request: {
             KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
@@ -236,6 +250,7 @@ describe('queries', () => {
         const countQuery = query.count(['a', 'b'])
 
         expect(countQuery).toEqual({
+          context: testContext,
           action: 'query',
           request: {
             Select: 'COUNT',

@@ -47,6 +47,7 @@ const create = context =>
   (key, body) => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
+      context,
       action: 'put',
       request: {
         Item: {
@@ -74,7 +75,7 @@ const get = context =>
       }
     }
 
-    return { action: 'get', request }
+    return { context, action: 'get', request }
   }
 
 const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
@@ -89,6 +90,7 @@ const update = context =>
     const resolvedKey = resolveKey(key, context.separator)
     const data = { ...body, updatedAt: context.stamp }
     return {
+      context,
       action: 'update',
       request: {
         Key: getKey(resolvedKey, context),
@@ -104,6 +106,7 @@ const remove = context => {
   return key => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
+      context,
       action: 'delete',
       request: {
         Key: getKey(resolvedKey, context),
@@ -119,6 +122,7 @@ const list = context =>
   key => {
     const resolvedKey = resolveKey(key, context.separator)
     return {
+      context,
       action: 'query',
       request: {
         KeyConditionExpression: getKeyConditionExpression(context),
