@@ -65,19 +65,26 @@ const create = context =>
     }
   }
 
+const update = context =>
+  (key, body) => {
+    const putQuery = create(context)(key, body)
+    return {
+      ...putQuery,
+      request: {
+        ...putQuery.request,
+        ConditionExpression: getConditionExpression(context, '=')
+      }
+    }
+  }
+
 const get = context =>
   (key, options = {}) => {
     const resolvedKey = resolveKey(key, context.separator)
-
-    let request = { Key: getKey(resolvedKey, context) }
-    if (options.keys) {
-      request = {
-        ...request,
-        ProjectionExpression: options.keys.join(', ')
-      }
+    return {
+      context,
+      action: 'get',
+      request: { Key: getKey(resolvedKey, context), ...options }
     }
-
-    return { context, action: 'get', request }
   }
 
 const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
@@ -164,6 +171,7 @@ const queries = ({
     create: create(context),
     get: get(context),
     patch: patch(context),
+    update: update(context),
     destroy: destroy(context),
     list: list(context),
     count: count(context)

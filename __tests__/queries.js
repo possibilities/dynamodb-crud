@@ -23,9 +23,12 @@ describe('queries', () => {
         })
       })
 
-      test('with `keys`', () => {
+      test('with attributes', () => {
         const query = queries()
-        expect(query.get(['a', 'b'], { keys: ['foo', 'bar'] })).toEqual({
+        expect(query.get(
+          ['a', 'b'],
+          { ProjectionExpression: 'foo, bar' }
+        )).toEqual({
           context: testContext,
           action: 'get',
           request: {
@@ -90,6 +93,35 @@ describe('queries', () => {
             },
             ExpressionAttributeValues: {
               ':foo': 'bar',
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            }
+          }
+        })
+      })
+    })
+
+    describe('update', () => {
+      test('basic', () => {
+        const query = queries()
+        const patchQuery = query.update(['a', 'b'], { foo: 'bar' })
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
               ':hash': 'a.b',
               ':range': 'a.b'
             }
