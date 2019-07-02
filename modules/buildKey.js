@@ -1,4 +1,6 @@
 const buildKey = (path, separator = '.') => {
+  if (!Array.isArray(path)) return path
+
   const [resource, subjectId] = path
 
   const rangeParts = path.length === 2

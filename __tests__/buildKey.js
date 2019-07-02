@@ -8,6 +8,13 @@ describe('buildKey', () => {
     })
   })
 
+  test('with object', () => {
+    expect(buildKey({ hash: 'foo', range: 'bar' })).toEqual({
+      hash: 'foo',
+      range: 'bar'
+    })
+  })
+
   test('with odd length range', () => {
     expect(buildKey(['a', 'b', 'c'])).toEqual({
       hash: 'a.b',

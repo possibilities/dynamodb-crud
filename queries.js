@@ -101,12 +101,8 @@ const update = context =>
   }
 
 const remove = context => {
-  const pathForItem = item => item[context.rangeKeyName].split(context.separator)
   return path => {
-    const preparedPath = Array.isArray(path)
-      ? path
-      : pathForItem(path)
-    const key = buildKey(preparedPath, context.separator)
+    const key = buildKey(path, context.separator)
     return {
       action: 'delete',
       request: {
