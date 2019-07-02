@@ -141,10 +141,10 @@ describe('dynamodb', () => {
     })
   })
 
-  describe('batch', () => {
+  describe('batchWrite', () => {
     test('basic', async () => {
       const query = queries()
-      await db.batch([
+      await db.batchWrite([
         query.create(['a', 'b'], { foo: 123 }),
         query.create(['a', 'c'], { foo: 124 })
       ])
@@ -156,11 +156,11 @@ describe('dynamodb', () => {
     })
   })
 
-  describe('transact', () => {
+  describe('transactWrite', () => {
     test('basic', async () => {
       const query = queries()
 
-      await db.transact([
+      await db.transactWrite([
         query.create(['a', 'b'], { foo: 123 }),
         query.create(['a', 'c'], { foo: 124 })
       ])
@@ -174,7 +174,7 @@ describe('dynamodb', () => {
     test('single query', async () => {
       const query = queries()
 
-      await db.transact(query.create(['a', 'b'], { foo: 123 }))
+      await db.transactWrite(query.create(['a', 'b'], { foo: 123 }))
 
       expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
       // Check false positive

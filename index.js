@@ -90,7 +90,7 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
   throw new Error(`query does not support ${query.action} action`)
 }
 
-const batch = (db, config = {}) => async (queries, options = {}) => {
+const batchWrite = (db, config = {}) => async (queries, options = {}) => {
   for (const queriesChunk of chunk(queries, 25)) {
     await db.batchWrite({
       RequestItems: {
@@ -108,7 +108,7 @@ const ensureArray = arr => Array.isArray(arr)
   ? arr
   : [arr]
 
-const transact = (db, config = {}) => async queries => {
+const transactWrite = (db, config = {}) => async queries => {
   const queriesArr = ensureArray(queries)
   for (const queriesChunk of chunk(queriesArr, 25)) {
     await existsOrNull(db.transactWrite({
@@ -126,9 +126,9 @@ const transact = (db, config = {}) => async queries => {
 const crud = (config = {}) => {
   const db = dynamodb(config)
   return {
-    batch: batch(db, config),
     invoke: invoke(db, config),
-    transact: transact(db, config)
+    transactWrite: transactWrite(db, config),
+    batchWrite: batchWrite(db, config),
   }
 }
 
