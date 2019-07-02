@@ -52,7 +52,7 @@ describe('queries', () => {
           request: {
             Item: {
               hash: 'a.b',
-              range: 'a.b.c.d',
+              range: 'c.d',
               foo: 'bar',
               createdAt: stamp,
               updatedAt: stamp
@@ -64,7 +64,7 @@ describe('queries', () => {
             },
             ExpressionAttributeValues: {
               ':hash': 'a.b',
-              ':range': 'a.b.c.d'
+              ':range': 'c.d'
             }
           }
         })
