@@ -1,4 +1,5 @@
 const dynamodb = require('aws-dynamodb-axios')
+const omit = require('./modules/omit')
 const chunk = require('./modules/chunk')
 const { unmarshall, marshall } = require('aws-dynamodb-axios')
 
@@ -45,6 +46,9 @@ const marshallRequest = request => {
   return marshalled
 }
 
+const itemView = (item, context) =>
+  omit(item, [context.hashKeyName, context.rangeKeyName])
+
 const invoke = (db, config = {}) => async (query, options = {}) => {
   if (Array.isArray(query)) {
     return Promise.all(query.map(q => invoke(db, config)(q, options)))
@@ -60,11 +64,11 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
       const getResult = await db.get(request)
       return isEmpty(getResult)
         ? null
-        : unmarshall(getResult.Item)
+        : itemView(unmarshall(getResult.Item), query.context)
     case 'put':
       const putResult = await db.put(request)
       if (putResult === null) return null
-      return query.request.Item
+      return itemView(query.request.Item, query.context)
     case 'delete':
       return await existsOrNull(db.delete(request))
         ? {}
@@ -72,12 +76,13 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
     case 'query':
       const getItems = await db.query(request)
       if (!getItems.Items && getItems.Count !== undefined) return getItems.Count
-      return unmarshall(getItems.Items)
+      return unmarshall(getItems.Items).map(item => itemView(item, query.context))
     case 'update':
       const updateResult = await existsOrNull(db.update(request))
       if (updateResult === null) return null
       return invoke(db, config)({
         action: 'get',
+        context: query.context,
         request: { Key: query.request.Key }
       })
   }

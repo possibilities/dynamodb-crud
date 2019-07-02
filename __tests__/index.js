@@ -22,39 +22,19 @@ describe('dynamodb', () => {
           const created = await db.invoke(query.create(['a', 'b'], { foo: 123 }))
 
           // Check that create returns new item
-          expect(created).toEqual(
-            expect.objectContaining({
-              foo: 123,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(created).toEqual({ foo: 123 })
 
           // Check that new item is persisted
           const fetched = await db.invoke(query.get(['a', 'b']))
-          expect(fetched).toEqual(
-            expect.objectContaining({
-              foo: 123,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(fetched).toEqual({ foo: 123 })
         })
       })
 
       describe('get', () => {
         test('basic', async () => {
           const query = queries()
-
           await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual(
-            expect.objectContaining({
-              foo: 123,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
         })
 
         test('non-existent item', async () => {
@@ -68,16 +48,8 @@ describe('dynamodb', () => {
       describe('update', () => {
         test('basic', async () => {
           const query = queries()
-
           await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual(
-            expect.objectContaining({
-              foo: 123,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
 
           // Time passes
           await new Promise(resolve => setTimeout(resolve, 10))
@@ -86,23 +58,11 @@ describe('dynamodb', () => {
           // Check that the update returns the new object
           const createQuery = query2.update(['a', 'b'], { foo: 124 })
           const created = await db.invoke(createQuery)
-          expect(created).toEqual(
-            expect.objectContaining({
-              foo: 124,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(created).toEqual({ foo: 124 })
 
           // Check that the new object is persisted
           const fetched = await db.invoke(query2.get(['a', 'b']))
-          expect(fetched).toEqual(
-            expect.objectContaining({
-              foo: 124,
-              hash: 'a.b',
-              range: 'a.b'
-            })
-          )
+          expect(fetched).toEqual({ foo: 124 })
         })
 
         test('non-existent item', async () => {
@@ -140,8 +100,14 @@ describe('dynamodb', () => {
           await db.invoke(query.create(['a', 'b', 'c', 'e'], { foo: 124 }))
           await db.invoke(query.create(['a', 'b', 'd', 'f'], { foo: 125 }))
 
-          expect(await db.invoke(query.list(['a', 'b', 'c']))).toHaveLength(2)
-          expect(await db.invoke(query.list(['a', 'b', 'd']))).toHaveLength(1)
+          expect(await db.invoke(query.list(['a', 'b', 'c']))).toEqual([
+            { foo: 123 },
+            { foo: 124 },
+          ])
+
+          expect(await db.invoke(query.list(['a', 'b', 'd']))).toEqual([
+            { foo: 125 }
+          ])
         })
       })
 
