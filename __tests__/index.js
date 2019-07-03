@@ -73,7 +73,7 @@ describe('dynamodb', () => {
         })
       })
 
-      describe('delete', () => {
+      describe('destroy', () => {
         test('basic', async () => {
           const query = queries()
           await db.invoke(query.create(['a', 'b'], { foo: 123 }))
