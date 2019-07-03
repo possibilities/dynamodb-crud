@@ -1,5 +1,9 @@
 const resolveKey = (key, separator = '.') => {
-  if (!Array.isArray(key)) return key
+  if (typeof key === 'string') {
+    key = key.split(separator)
+  } else if (!Array.isArray(key)) {
+    return key
+  }
 
   const [resourceName, resourceId] = key
 
