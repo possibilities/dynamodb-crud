@@ -531,10 +531,10 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-aws-dynamodb-axios@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/aws-dynamodb-axios/-/aws-dynamodb-axios-0.0.2.tgz#6c2cdd3bca4146bb3e26b5c9ac2c4ac8733bcb55"
-  integrity sha512-D6HAuKVn4iWUFm5LqpBOH3tYl5LrdbeO4WwPy09YoVo8HtJ+2sPtyLDSvIAz/w0CoVpmeS5zm3PBDB9v/18KWA==
+aws-dynamodb-axios@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/aws-dynamodb-axios/-/aws-dynamodb-axios-0.0.4.tgz#aa4477af1cbf9b71567c64a307443c13e2804c89"
+  integrity sha512-tV0JIu2EclrAQSeuD41aRNCBZrm++DcNhLtvjkSXcDSaNqnAuI1PdKAQG3MK8sxKx11kHjipma/vArz4Yj0qxA==
   dependencies:
     aws4 "^1.8.0"
     axios "^0.19.0"

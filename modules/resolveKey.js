@@ -5,6 +5,8 @@ const resolveKey = (key, separator = '.') => {
     return key
   }
 
+  if (!Array.isArray(key)) return key
+
   const [resourceName, resourceId] = key
 
   const rangeParts = key.length === 2
