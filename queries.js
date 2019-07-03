@@ -133,22 +133,19 @@ const destroy = context => {
   }
 }
 
-const list = context =>
-  key => {
-    const resolvedKey = resolveKey(key, context.separator)
-    return {
+const list = context => (key, options = {}) => ({
+  context,
+  action: 'query',
+  request: {
+    KeyConditionExpression: getKeyConditionExpression(context),
+    ExpressionAttributeNames: getAttributeNames(context),
+    ExpressionAttributeValues: getExpressionAttributeValues(
       context,
-      action: 'query',
-      request: {
-        KeyConditionExpression: getKeyConditionExpression(context),
-        ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(
-          context,
-          resolvedKey
-        )
-      }
-    }
+      resolveKey(key, context.separator)
+    ),
+    ...options
   }
+})
 
 const count = context => {
   const buildListQuery = list(context)

@@ -206,6 +206,28 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with options', () => {
+        const query = queries()
+        const listQuery = query.list(['a', 'b'], { IndexName: 'test' })
+
+        expect(listQuery).toEqual({
+          context: testContext,
+          action: 'query',
+          request: {
+            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            IndexName: 'test'
+          }
+        })
+      })
     })
 
     describe('count', () => {
