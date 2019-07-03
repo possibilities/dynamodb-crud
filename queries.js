@@ -45,7 +45,7 @@ const getKeyConditionExpression = context =>
 
 const create = context =>
   (key, body) => {
-    const resolvedKey = resolveKey(key, context.separator)
+    const resolvedKey = resolveKey(key, context)
     return {
       body,
       context,
@@ -79,7 +79,7 @@ const update = context =>
 
 const get = context =>
   (key, options = {}) => {
-    const resolvedKey = resolveKey(key, context.separator)
+    const resolvedKey = resolveKey(key, context)
     return {
       context,
       action: 'get',
@@ -96,7 +96,7 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
 
 const patch = context =>
   (key, body) => {
-    const resolvedKey = resolveKey(key, context.separator)
+    const resolvedKey = resolveKey(key, context)
     return {
       body,
       context,
@@ -116,7 +116,7 @@ const patch = context =>
 
 const destroy = context => {
   return key => {
-    const resolvedKey = resolveKey(key, context.separator)
+    const resolvedKey = resolveKey(key, context)
     return {
       context,
       action: 'delete',
@@ -141,7 +141,7 @@ const list = context => (key, options = {}) => ({
     ExpressionAttributeNames: getAttributeNames(context),
     ExpressionAttributeValues: getExpressionAttributeValues(
       context,
-      resolveKey(key, context.separator)
+      resolveKey(key, context)
     ),
     ...options
   }

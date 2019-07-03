@@ -1,4 +1,4 @@
-const resolveKey = (key, separator = '.') => {
+const resolveKey = (key, { separator, hashKeyName, rangeKeyName }) => {
   if (typeof key === 'string') {
     key = key.split(separator)
   } else if (!Array.isArray(key)) {
@@ -15,7 +15,7 @@ const resolveKey = (key, separator = '.') => {
   const range = rangeParts.join(separator)
 
   const hash = [resourceName, resourceId].join(separator)
-  return { hash, range }
+  return { [hashKeyName]: hash, [rangeKeyName]: range }
 }
 
 module.exports = resolveKey
