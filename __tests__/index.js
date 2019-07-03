@@ -246,7 +246,6 @@ describe('dynamodb', () => {
         query.patch(['a', 'b'], { foo: 125 }),
         query.patch(['a', 'c'], { foo: 126 })
       ])
-      return
 
       expect(itemsFetched).toEqual([
         { foo: 125 },

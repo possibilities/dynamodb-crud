@@ -6,7 +6,6 @@ const { unmarshall, marshall } = require('aws-dynamodb-axios')
 const isEmpty = obj => !Object.keys(obj).length
 const upperFirst = str => str[0].toUpperCase() + str.slice(1)
 
-const extractItem = query => Object.values(query).pop().Item
 const failedConditionType = 'ConditionalCheckFailedException'
 
 const existsOrNull = async invoking => {
