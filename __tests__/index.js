@@ -253,6 +253,33 @@ describe('dynamodb', () => {
       ])
     })
 
+    test('destroy', async () => {
+      const query = queries()
+
+      const itemsCreated = await db.transactWrite([
+        query.create(['a', 'b'], { foo: 123 }),
+        query.create(['a', 'c'], { foo: 124 }),
+        query.create(['a', 'd'], { foo: 125 })
+      ])
+
+      expect(itemsCreated).toEqual([
+        { foo: 123 },
+        { foo: 124 },
+        { foo: 125 }
+      ])
+
+      const itemsDestroyed = await db.transactWrite([
+        query.destroy(['a', 'b'], { foo: 123 }),
+        query.destroy(['a', 'c'], { foo: 124 })
+      ])
+
+      expect(itemsDestroyed).toEqual({})
+
+      expect(await db.transactWrite(query.destroy(['a', 'd']))).not.toBeNull()
+      // Check false positive
+      expect(await db.transactWrite(query.destroy(['a', 'x']))).toBeNull()
+    })
+
     test('single query', async () => {
       const query = queries()
 

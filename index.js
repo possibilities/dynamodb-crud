@@ -7,6 +7,21 @@ const isEmpty = obj => !Object.keys(obj).length
 const upperFirst = str => str[0].toUpperCase() + str.slice(1)
 
 const failedConditionType = 'ConditionalCheckFailedException'
+const failedTranactionConditionType = 'TransactionCanceledException'
+
+const existsOrNullInTransaction = async invoking => {
+  try {
+    return await invoking
+  } catch (error) {
+    if (
+      error.statusCode === 400 &&
+      error.data.__type.endsWith(failedTranactionConditionType)
+    ) {
+      return null
+    }
+    throw error
+  }
+}
 
 const existsOrNull = async invoking => {
   try {
@@ -168,7 +183,7 @@ const transactWrite = (db, config = {}) => async queries => {
 
   let hasNulls = false
   for (const queriesChunk of chunk(queriesArr, 25)) {
-    const responses = await existsOrNull(db.transactWrite({
+    const responses = await existsOrNullInTransaction(db.transactWrite({
       TransactItems: queriesChunk.map(query => ({
         [upperFirst(query.action)]: {
           ...marshallRequest(query.request),
@@ -184,10 +199,18 @@ const transactWrite = (db, config = {}) => async queries => {
   }
 
   if (hasNulls) return null
+
+  if (queriesArr[0].action === 'delete') {
+    return {}
+  }
+
   const bodies = queriesArr.map(q => q.body)
-  return queriesArr.length > 1
-    ? bodies
-    : bodies.pop()
+
+  if (queriesArr.length === 1) {
+    return bodies.pop()
+  }
+
+  return bodies
 }
 
 const crud = (config = {}) => {
