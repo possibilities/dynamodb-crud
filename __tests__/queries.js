@@ -14,12 +14,8 @@ describe('queries', () => {
         expect(query.get(['a', 'b'])).toEqual({
           context: testContext,
           action: 'get',
-          request: {
-            Key: {
-              hash: 'a.b',
-              range: 'a.b'
-            }
-          }
+          key: { hash: 'a.b', range: 'a.b' },
+          request: { Key: { hash: 'a.b', range: 'a.b' } }
         })
       })
 
@@ -31,11 +27,9 @@ describe('queries', () => {
         )).toEqual({
           context: testContext,
           action: 'get',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
-            Key: {
-              hash: 'a.b',
-              range: 'a.b'
-            },
+            Key: { hash: 'a.b', range: 'a.b' },
             ProjectionExpression: 'foo, bar'
           }
         })
@@ -50,6 +44,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
@@ -82,6 +77,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
@@ -112,6 +108,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'update',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -145,6 +142,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'update',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -177,6 +175,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
@@ -208,6 +207,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
@@ -237,6 +237,7 @@ describe('queries', () => {
         expect(destroyQuery).toEqual({
           action: 'delete',
           context: testContext,
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -265,6 +266,7 @@ describe('queries', () => {
         expect(destroyQuery).toEqual({
           action: 'delete',
           context: testContext,
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -294,6 +296,7 @@ describe('queries', () => {
         expect(destroyQuery).toEqual({
           context: testContext,
           action: 'delete',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -321,6 +324,7 @@ describe('queries', () => {
         expect(listQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             KeyConditionExpression: (
               '#hash = :hash AND begins_with(#range, :range)'
@@ -344,6 +348,7 @@ describe('queries', () => {
         expect(listQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             KeyConditionExpression: (
               '#hash = :hash AND begins_with(#range, :range)'
@@ -375,6 +380,7 @@ describe('queries', () => {
             rangeKeyName: 'customrange'
           },
           action: 'query',
+          key: { customhash: 'a.b', customrange: 'a.b' },
           request: {
             KeyConditionExpression: (
               '#customhash = :customhash AND ' +
@@ -405,6 +411,7 @@ describe('queries', () => {
         expect(countQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Select: 'COUNT',
             KeyConditionExpression: (

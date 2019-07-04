@@ -54,6 +54,7 @@ const create = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
     return {
+      key,
       body,
       context,
       action: 'put',
@@ -88,6 +89,7 @@ const get = context =>
   (...args) => {
     const [key, options = {}] = resolveKey(context, ...args)
     return {
+      key,
       context,
       action: 'get',
       request: { Key: prepareKey(key, context), ...options }
@@ -98,6 +100,7 @@ const patch = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
     return {
+      key,
       body,
       context,
       action: 'update',
@@ -119,6 +122,7 @@ const destroy = context => {
   return (...args) => {
     const [key, options = {}] = resolveKey(context, ...args)
     return {
+      key,
       context,
       action: 'delete',
       request: {
@@ -135,6 +139,7 @@ const destroy = context => {
 const list = context => (...args) => {
   const [key, options = {}] = resolveKey(context, ...args)
   return {
+    key,
     context,
     action: 'query',
     request: {
