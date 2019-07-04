@@ -194,7 +194,9 @@ describe('queries', () => {
           context: testContext,
           action: 'query',
           request: {
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
@@ -215,7 +217,9 @@ describe('queries', () => {
           context: testContext,
           action: 'query',
           request: {
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
@@ -230,14 +234,24 @@ describe('queries', () => {
       })
 
       test('with custom key names', () => {
-        const query = queries({ hashKeyName: 'customhash', rangeKeyName: 'customrange' })
+        const query = queries({
+          hashKeyName: 'customhash',
+          rangeKeyName: 'customrange'
+        })
         const listQuery = query.list(['a', 'b'], { IndexName: 'test' })
 
         expect(listQuery).toEqual({
-          context: { ...testContext, hashKeyName: 'customhash', rangeKeyName: 'customrange' },
+          context: {
+            ...testContext,
+            hashKeyName: 'customhash',
+            rangeKeyName: 'customrange'
+          },
           action: 'query',
           request: {
-            KeyConditionExpression: '#customhash = :customhash AND begins_with(#customrange, :customrange)',
+            KeyConditionExpression: (
+              '#customhash = :customhash AND ' +
+              'begins_with(#customrange, :customrange)'
+            ),
             ExpressionAttributeNames: {
               '#customhash': 'customhash',
               '#customrange': 'customrange'
@@ -262,7 +276,9 @@ describe('queries', () => {
           action: 'query',
           request: {
             Select: 'COUNT',
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
