@@ -96,16 +96,16 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
 
-          await db.invoke(query.create(['a', 'b', 'c', 'd'], { foo: 123 }))
-          await db.invoke(query.create(['a', 'b', 'c', 'e'], { foo: 124 }))
-          await db.invoke(query.create(['a', 'b', 'd', 'f'], { foo: 125 }))
+          await db.invoke(query.create(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.create(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.create(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
-          expect(await db.invoke(query.list(['a', 'b', 'c']))).toEqual([
+          expect(await db.invoke(query.list(['a', 'b'], ['c']))).toEqual([
             { foo: 123 },
             { foo: 124 }
           ])
 
-          expect(await db.invoke(query.list(['a', 'b', 'd']))).toEqual([
+          expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual([
             { foo: 125 }
           ])
         })
@@ -115,12 +115,12 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
 
-          await db.invoke(query.create(['a', 'b', 'c', 'd'], { foo: 123 }))
-          await db.invoke(query.create(['a', 'b', 'c', 'e'], { foo: 124 }))
-          await db.invoke(query.create(['a', 'b', 'd', 'f'], { foo: 125 }))
+          await db.invoke(query.create(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.create(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.create(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
-          expect(await db.invoke(query.count(['a', 'b', 'c']))).toEqual(2)
-          expect(await db.invoke(query.count(['a', 'b', 'd']))).toEqual(1)
+          expect(await db.invoke(query.count(['a', 'b'], ['c']))).toEqual(2)
+          expect(await db.invoke(query.count(['a', 'b'], ['d']))).toEqual(1)
         })
       })
     })

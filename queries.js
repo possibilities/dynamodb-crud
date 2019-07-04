@@ -2,7 +2,7 @@ const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
 const resolveKey = require('./modules/resolveKey')
 
-const getKey = (item, context) => ({
+const prepareKey = (item, context) => ({
   [context.hashKeyName]: item[context.hashKeyName],
   [context.rangeKeyName]: item[context.rangeKeyName]
 })
@@ -51,30 +51,28 @@ const getKeyConditionExpression = context =>
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
 const create = context =>
-  (key, body, options = {}) => {
-    const resolvedKey = resolveKey(key, context)
+  (...args) => {
+    const [key, body, options = {}] = resolveKey(context, ...args)
     return {
       body,
       context,
       action: 'put',
       request: {
         Item: {
-          ...getKey(resolvedKey, context),
+          ...prepareKey(key, context),
           ...body
         },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(
-          context,
-          resolvedKey
-        ),
+        ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
     }
   }
 
 const update = context =>
-  (key, body, options = {}) => {
+  (...args) => {
+    const [key, body, options = {}] = resolveKey(context, ...args)
     const putQuery = create(context)(key, body)
     return {
       ...putQuery,
@@ -87,33 +85,30 @@ const update = context =>
   }
 
 const get = context =>
-  (key, options = {}) => {
-    const resolvedKey = resolveKey(key, context)
+  (...args) => {
+    const [key, options = {}] = resolveKey(context, ...args)
     return {
       context,
       action: 'get',
-      request: {
-        Key: getKey(resolvedKey, context),
-        ...options
-      }
+      request: { Key: prepareKey(key, context), ...options }
     }
   }
 
 const patch = context =>
-  (key, body, options = {}) => {
-    const resolvedKey = resolveKey(key, context)
+  (...args) => {
+    const [key, body, options = {}] = resolveKey(context, ...args)
     return {
       body,
       context,
       action: 'update',
       request: {
-        Key: getKey(resolvedKey, context),
+        Key: prepareKey(key, context),
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, body),
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
-          { ...resolvedKey, ...body }
+          { ...key, ...body }
         ),
         ...options
       }
@@ -121,43 +116,41 @@ const patch = context =>
   }
 
 const destroy = context => {
-  return (key, options = {}) => {
-    const resolvedKey = resolveKey(key, context)
+  return (...args) => {
+    const [key, options = {}] = resolveKey(context, ...args)
     return {
       context,
       action: 'delete',
       request: {
-        Key: getKey(resolvedKey, context),
+        Key: prepareKey(key, context),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context),
-        ExpressionAttributeValues: getExpressionAttributeValues(
-          context,
-          resolvedKey
-        ),
+        ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
     }
   }
 }
 
-const list = context => (key, options = {}) => ({
-  context,
-  action: 'query',
-  request: {
-    KeyConditionExpression: getKeyConditionExpression(context),
-    ExpressionAttributeNames: getAttributeNames(context),
-    ExpressionAttributeValues: getExpressionAttributeValues(
-      context,
-      resolveKey(key, context)
-    ),
-    ...options
+const list = context => (...args) => {
+  const [key, options = {}] = resolveKey(context, ...args)
+  return {
+    context,
+    action: 'query',
+    request: {
+      KeyConditionExpression: getKeyConditionExpression(context),
+      ExpressionAttributeNames: getAttributeNames(context),
+      ExpressionAttributeValues: getExpressionAttributeValues(context, key),
+      ...options
+    }
   }
-})
+}
 
 const count = context => {
   const buildListQuery = list(context)
-  return (key, options = {}) => {
-    const listQuery = buildListQuery(key)
+  return (...args) => {
+    const [key, options = {}] = resolveKey(context, ...args)
+    const listQuery = buildListQuery(key, options)
     return {
       ...listQuery,
       request: {

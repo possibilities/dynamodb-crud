@@ -46,14 +46,14 @@ describe('queries', () => {
       test('basic', () => {
         const query = queries()
 
-        expect(query.create(['a', 'b', 'c', 'd'], { foo: 'bar' })).toEqual({
+        expect(query.create(['a', 'b'], { foo: 'bar' })).toEqual({
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
           request: {
             Item: {
               hash: 'a.b',
-              range: 'c.d',
+              range: 'a.b',
               foo: 'bar'
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
@@ -63,7 +63,7 @@ describe('queries', () => {
             },
             ExpressionAttributeValues: {
               ':hash': 'a.b',
-              ':range': 'c.d'
+              ':range': 'a.b'
             }
           }
         })
@@ -74,7 +74,7 @@ describe('queries', () => {
 
         expect(
           query.create(
-            ['a', 'b', 'c', 'd'],
+            ['a', 'b'],
             { foo: 'bar' },
             { ReturnConsumedCapacity: 'TOTAL' }
           )
@@ -85,7 +85,7 @@ describe('queries', () => {
           request: {
             Item: {
               hash: 'a.b',
-              range: 'c.d',
+              range: 'a.b',
               foo: 'bar'
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
@@ -95,7 +95,7 @@ describe('queries', () => {
             },
             ExpressionAttributeValues: {
               ':hash': 'a.b',
-              ':range': 'c.d'
+              ':range': 'a.b'
             },
             ReturnConsumedCapacity: 'TOTAL'
           }

@@ -3,45 +3,161 @@ const resolveKey = require('../resolveKey')
 const context = { hashKeyName: 'hash', rangeKeyName: 'range', separator: '.' }
 
 describe('resolveKey', () => {
-  test('hash only', () => {
-    expect(resolveKey(['a', 'b'], context)).toEqual({
-      hash: 'a.b',
-      range: 'a.b'
+  describe('object key', () => {
+    test('basic', () => {
+      expect(resolveKey(
+        context,
+        { hash: 'foo.bar', range: 'foof.doof' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' }
+      ])
+    })
+
+    test('with options', () => {
+      expect(resolveKey(
+        context,
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { optionKey: 'optionValue' }
+      ])
+    })
+
+    test('with body', () => {
+      expect(resolveKey(
+        context,
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      ])
     })
   })
 
-  test('with object', () => {
-    expect(resolveKey({ hash: 'foo', range: 'bar' }, context)).toEqual({
-      hash: 'foo',
-      range: 'bar'
+  describe('single array', () => {
+    test('basic', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar']
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foo.bar' }
+      ])
+    })
+
+    test('with options', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar'],
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foo.bar' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      ])
+    })
+
+    test('with body', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar'],
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foo.bar' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      ])
     })
   })
 
-  test('with string', () => {
-    expect(resolveKey('a.b.c.d', context)).toEqual({
-      hash: 'a.b',
-      range: 'c.d'
+  describe('multiple arrays', () => {
+    test('basic', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar'],
+        ['foof', 'doof']
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' }
+      ])
+    })
+
+    test('with options', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar'],
+        ['foof', 'doof'],
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { optionKey: 'optionValue' }
+      ])
+    })
+
+    test('with body', () => {
+      expect(resolveKey(
+        context,
+        ['foo', 'bar'],
+        ['foof', 'doof'],
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      ])
     })
   })
 
-  test('with odd length range', () => {
-    expect(resolveKey(['a', 'b', 'c'], context)).toEqual({
-      hash: 'a.b',
-      range: 'c'
+  describe('mapped arrays', () => {
+    test('basic', () => {
+      expect(resolveKey(
+        context,
+        { hash: ['foo', 'bar'], range: ['foof', 'doof'] }
+      )).toEqual([{
+        hash: 'foo.bar',
+        range: 'foof.doof'
+      }])
+    })
+
+    test('with options', () => {
+      expect(resolveKey(
+        context,
+        { hash: ['foo', 'bar'], range: ['foof', 'doof'] },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { optionKey: 'optionValue' }
+      ])
+    })
+
+    test('with body', () => {
+      expect(resolveKey(
+        context,
+        { hash: ['foo', 'bar'], range: ['foof', 'doof'] },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' },
+        { bodyKey: 'bodyVal' },
+        { optionKey: 'optionValue' }
+      ])
     })
   })
 
-  test('with even length range', () => {
-    expect(resolveKey(['a', 'b', 'c', 'd'], context)).toEqual({
-      hash: 'a.b',
-      range: 'c.d'
-    })
-  })
-
-  test('with custom separator', () => {
-    expect(resolveKey(['a', 'b', 'c', 'd'], { ...context, separator: '#' })).toEqual({
-      hash: 'a#b',
-      range: 'c#d'
+  describe('with custom separator', () => {
+    test('basic', () => {
+      expect(resolveKey(
+        { ...context, separator: '#' },
+        ['foo', 'bar'],
+        ['foof', 'doof']
+      )).toEqual([
+        { hash: 'foo#bar', range: 'foof#doof' }
+      ])
     })
   })
 })
