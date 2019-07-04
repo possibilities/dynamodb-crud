@@ -23,7 +23,7 @@ describe('queries', () => {
         })
       })
 
-      test('with attributes', () => {
+      test('with options', () => {
         const query = queries()
         expect(query.get(
           ['a', 'b'],
@@ -68,6 +68,39 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with options', () => {
+        const query = queries()
+
+        expect(
+          query.create(
+            ['a', 'b', 'c', 'd'],
+            { foo: 'bar' },
+            { ReturnConsumedCapacity: 'TOTAL' }
+          )
+        ).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'c.d',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash <> :hash AND #range <> :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'c.d'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
+          }
+        })
+      })
     })
 
     describe('patch', () => {
@@ -96,6 +129,40 @@ describe('queries', () => {
               ':hash': 'a.b',
               ':range': 'a.b'
             }
+          }
+        })
+      })
+
+      test('with options', () => {
+        const query = queries()
+        const patchQuery = query.patch(
+          ['a', 'b'],
+          { foo: 'bar' },
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'update',
+          request: {
+            Key: {
+              hash: 'a.b',
+              range: 'a.b'
+            },
+            UpdateExpression: 'set #foo = :foo',
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range',
+              '#foo': 'foo'
+            },
+            ExpressionAttributeValues: {
+              ':foo': 'bar',
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
           }
         })
       })
@@ -128,6 +195,38 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with options', () => {
+        const query = queries()
+        const patchQuery = query.update(
+          ['a', 'b'],
+          { foo: 'bar' },
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
+          }
+        })
+      })
     })
 
     describe('destroy', () => {
@@ -152,6 +251,35 @@ describe('queries', () => {
               ':hash': 'a.b',
               ':range': 'a.b'
             }
+          }
+        })
+      })
+
+      test('with options', () => {
+        const query = queries()
+        const destroyQuery = query.destroy(
+          ['a', 'b'],
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(destroyQuery).toEqual({
+          action: 'delete',
+          context: testContext,
+          request: {
+            Key: {
+              hash: 'a.b',
+              range: 'a.b'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
           }
         })
       })
@@ -269,7 +397,10 @@ describe('queries', () => {
     describe('count', () => {
       test('basic', () => {
         const query = queries()
-        const countQuery = query.count(['a', 'b'])
+        const countQuery = query.count(
+          ['a', 'b'],
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
 
         expect(countQuery).toEqual({
           context: testContext,
@@ -286,7 +417,8 @@ describe('queries', () => {
             ExpressionAttributeValues: {
               ':hash': 'a.b',
               ':range': 'a.b'
-            }
+            },
+            ReturnConsumedCapacity: 'TOTAL'
           }
         })
       })

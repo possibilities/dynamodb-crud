@@ -51,7 +51,7 @@ const getKeyConditionExpression = context =>
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
 const create = context =>
-  (key, body) => {
+  (key, body, options = {}) => {
     const resolvedKey = resolveKey(key, context)
     return {
       body,
@@ -67,19 +67,21 @@ const create = context =>
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           resolvedKey
-        )
+        ),
+        ...options
       }
     }
   }
 
 const update = context =>
-  (key, body) => {
+  (key, body, options = {}) => {
     const putQuery = create(context)(key, body)
     return {
       ...putQuery,
       request: {
         ...putQuery.request,
-        ConditionExpression: getConditionExpression(context, '=')
+        ConditionExpression: getConditionExpression(context, '='),
+        ...options
       }
     }
   }
@@ -90,12 +92,15 @@ const get = context =>
     return {
       context,
       action: 'get',
-      request: { Key: getKey(resolvedKey, context), ...options }
+      request: {
+        Key: getKey(resolvedKey, context),
+        ...options
+      }
     }
   }
 
 const patch = context =>
-  (key, body) => {
+  (key, body, options = {}) => {
     const resolvedKey = resolveKey(key, context)
     return {
       body,
@@ -109,13 +114,14 @@ const patch = context =>
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           { ...resolvedKey, ...body }
-        )
+        ),
+        ...options
       }
     }
   }
 
 const destroy = context => {
-  return key => {
+  return (key, options = {}) => {
     const resolvedKey = resolveKey(key, context)
     return {
       context,
@@ -127,7 +133,8 @@ const destroy = context => {
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           resolvedKey
-        )
+        ),
+        ...options
       }
     }
   }
@@ -149,11 +156,15 @@ const list = context => (key, options = {}) => ({
 
 const count = context => {
   const buildListQuery = list(context)
-  return key => {
+  return (key, options = {}) => {
     const listQuery = buildListQuery(key)
     return {
       ...listQuery,
-      request: { ...listQuery.request, Select: 'COUNT' }
+      request: {
+        ...listQuery.request,
+        Select: 'COUNT',
+        ...options
+      }
     }
   }
 }
