@@ -35,6 +35,13 @@ const getAttributeNames = ({ hashKeyName, rangeKeyName }, body = {}) => {
   return fromPairs(Object.keys(data).map(key => ([`#${key}`, data[key]])))
 }
 
+const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
+  const nameExpressions = Object
+    .keys(omit(body, hashKeyName, rangeKeyName))
+    .map(key => `#${key} = :${key}`).join(', ')
+  return `set ${nameExpressions}`
+}
+
 const getConditionExpression = (context, comparator) =>
   `#${context.hashKeyName} ${comparator} :${context.hashKeyName} AND ` +
   `#${context.rangeKeyName} ${comparator} :${context.rangeKeyName}`
@@ -86,13 +93,6 @@ const get = context =>
       request: { Key: getKey(resolvedKey, context), ...options }
     }
   }
-
-const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
-  const nameExpressions = Object
-    .keys(omit(body, hashKeyName, rangeKeyName))
-    .map(key => `#${key} = :${key}`).join(', ')
-  return `set ${nameExpressions}`
-}
 
 const patch = context =>
   (key, body) => {
