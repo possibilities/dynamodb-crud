@@ -1,4 +1,4 @@
-const resolveKey = require('../modules/resolveKey')
+const resolveKey = require('../resolveKey')
 
 const context = { hashKeyName: 'hash', rangeKeyName: 'range', separator: '.' }
 
