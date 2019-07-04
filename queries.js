@@ -2,9 +2,9 @@ const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
 const resolveKey = require('./modules/resolveKey')
 
-const getKey = ({ hash, range }, context) => ({
-  [context.hashKeyName]: hash,
-  [context.rangeKeyName]: range
+const getKey = (item, context) => ({
+  [context.hashKeyName]: item[context.hashKeyName],
+  [context.rangeKeyName]: item[context.rangeKeyName]
 })
 
 const getExpressionAttributeValues = ({ hashKeyName, rangeKeyName }, body) => {

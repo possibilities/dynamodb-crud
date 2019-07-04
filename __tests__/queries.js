@@ -228,6 +228,28 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with custom key names', () => {
+        const query = queries({ hashKeyName: 'customhash', rangeKeyName: 'customrange' })
+        const listQuery = query.list(['a', 'b'], { IndexName: 'test' })
+
+        expect(listQuery).toEqual({
+          context: { ...testContext, hashKeyName: 'customhash', rangeKeyName: 'customrange' },
+          action: 'query',
+          request: {
+            KeyConditionExpression: '#customhash = :customhash AND begins_with(#customrange, :customrange)',
+            ExpressionAttributeNames: {
+              '#customhash': 'customhash',
+              '#customrange': 'customrange'
+            },
+            ExpressionAttributeValues: {
+              ':customhash': 'a.b',
+              ':customrange': 'a.b'
+            },
+            IndexName: 'test'
+          }
+        })
+      })
     })
 
     describe('count', () => {
