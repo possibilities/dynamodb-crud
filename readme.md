@@ -47,3 +47,11 @@ In addition to the [actions-based API provided by DynamoDb with Axios](https://g
 ##### `transactGet(obj|arr)`
 
 ##### `transactWrite(obj|arr)`
+
+#### Interceptors
+
+[Axios inspired](https://github.com/axios/axios#interceptors) interceptors are provided for injecting behavior into database interactions.
+
+##### `dynamodb.interceptors.request.use(fn) => (query)`
+
+##### `dynamodb.interceptors.response.use(fn) => (response, query))`
