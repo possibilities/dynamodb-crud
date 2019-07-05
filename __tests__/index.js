@@ -292,4 +292,53 @@ describe('dynamodb', () => {
       expect(await db.invoke(query.get(['a', 'x']))).toBeNull()
     })
   })
+
+  // TODO deeper + better tests
+  describe('interceptors', () => {
+    test('request', async () => {
+      let requests = []
+
+      const query = queries()
+      await db.invoke(query.create(['a', 'a'], { foo: 123 }))
+
+      db.interceptors.request.use(query => {
+        requests.push(query)
+        return query
+      })
+
+      let responses = []
+      db.interceptors.response.use(response => {
+        responses.push(query)
+        return response
+      })
+
+      await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+      await db.invoke(query.create(['a', 'c'], { foo: 123 }))
+      await db.invoke(query.create(['a', 'd'], { foo: 123 }))
+
+      expect(requests).toHaveLength(3)
+      expect(responses).toHaveLength(3)
+
+      await db.transactWrite(query.create(['a', 'e'], { foo: 123 }))
+
+      expect(requests).toHaveLength(4)
+      expect(responses).toHaveLength(4)
+
+      await db.transactWrite([
+        query.create(['a', 'f'], { foo: 123 }),
+        query.create(['a', 'g'], { foo: 123 })
+      ])
+
+      expect(requests).toHaveLength(6)
+      expect(responses).toHaveLength(6)
+
+      await db.batchWrite([
+        query.create(['a', 'f'], { foo: 123 }),
+        query.create(['a', 'g'], { foo: 123 })
+      ])
+
+      expect(requests).toHaveLength(8)
+      expect(responses).toHaveLength(8)
+    })
+  })
 })
