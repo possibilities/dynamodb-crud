@@ -213,14 +213,34 @@ const transactWrite = (db, config = {}) => async queries => {
   return bodies
 }
 
+const compose = (...fns) => (fns.length ? fns : [x => x]).reduce((f, g) => (...args) => f(g(...args)))
+
 const crud = (config = {}) => {
   const db = dynamodb(config)
+  const interceptors = { request: [], response: [] }
+
+  const intercept = handler => async (queries, ...args) => {
+    const interceptRequest = compose(...interceptors.request)
+    const interceptResponse = compose(...interceptors.response)
+    queries = Array.isArray(queries)
+      ? queries.map(interceptRequest)
+      : interceptRequest(queries)
+    const responses = await handler(queries, ...args)
+    return Array.isArray(responses)
+      ? responses.map((response, i) => interceptResponse(response, queries[i]))
+      : interceptResponse(responses, queries)
+  }
+
   return {
-    invoke: invoke(db, config),
-    transactGet: transactGet(db, config),
-    transactWrite: transactWrite(db, config),
-    batchWrite: batchWrite(db, config),
-    batchGet: batchGet(db, config)
+    invoke: intercept(invoke(db, config)),
+    transactGet: intercept(transactGet(db, config)),
+    transactWrite: intercept(transactWrite(db, config)),
+    batchWrite: intercept(batchWrite(db, config)),
+    batchGet: intercept(batchGet(db, config)),
+    interceptors: {
+      request: { use: handler => interceptors.request.push(handler) },
+      response: { use: handler => interceptors.response.push(handler) }
+    }
   }
 }
 
