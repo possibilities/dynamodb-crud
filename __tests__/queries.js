@@ -14,16 +14,12 @@ describe('queries', () => {
         expect(query.get(['a', 'b'])).toEqual({
           context: testContext,
           action: 'get',
-          request: {
-            Key: {
-              hash: 'a.b',
-              range: 'a.b'
-            }
-          }
+          key: { hash: 'a.b', range: 'a.b' },
+          request: { Key: { hash: 'a.b', range: 'a.b' } }
         })
       })
 
-      test('with attributes', () => {
+      test('with options', () => {
         const query = queries()
         expect(query.get(
           ['a', 'b'],
@@ -31,11 +27,9 @@ describe('queries', () => {
         )).toEqual({
           context: testContext,
           action: 'get',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
-            Key: {
-              hash: 'a.b',
-              range: 'a.b'
-            },
+            Key: { hash: 'a.b', range: 'a.b' },
             ProjectionExpression: 'foo, bar'
           }
         })
@@ -46,14 +40,15 @@ describe('queries', () => {
       test('basic', () => {
         const query = queries()
 
-        expect(query.create(['a', 'b', 'c', 'd'], { foo: 'bar' })).toEqual({
+        expect(query.create(['a', 'b'], { foo: 'bar' })).toEqual({
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
-              range: 'c.d',
+              range: 'a.b',
               foo: 'bar'
             },
             ConditionExpression: '#hash <> :hash AND #range <> :range',
@@ -63,8 +58,42 @@ describe('queries', () => {
             },
             ExpressionAttributeValues: {
               ':hash': 'a.b',
-              ':range': 'c.d'
+              ':range': 'a.b'
             }
+          }
+        })
+      })
+
+      test('with options', () => {
+        const query = queries()
+
+        expect(
+          query.create(
+            ['a', 'b'],
+            { foo: 'bar' },
+            { ReturnConsumedCapacity: 'TOTAL' }
+          )
+        ).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash <> :hash AND #range <> :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
           }
         })
       })
@@ -79,6 +108,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'update',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -99,6 +129,41 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with options', () => {
+        const query = queries()
+        const patchQuery = query.patch(
+          ['a', 'b'],
+          { foo: 'bar' },
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'update',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Key: {
+              hash: 'a.b',
+              range: 'a.b'
+            },
+            UpdateExpression: 'set #foo = :foo',
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range',
+              '#foo': 'foo'
+            },
+            ExpressionAttributeValues: {
+              ':foo': 'bar',
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
+          }
+        })
+      })
     })
 
     describe('update', () => {
@@ -110,6 +175,7 @@ describe('queries', () => {
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Item: {
               hash: 'a.b',
@@ -128,6 +194,39 @@ describe('queries', () => {
           }
         })
       })
+
+      test('with options', () => {
+        const query = queries()
+        const patchQuery = query.update(
+          ['a', 'b'],
+          { foo: 'bar' },
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
+          }
+        })
+      })
     })
 
     describe('destroy', () => {
@@ -138,6 +237,7 @@ describe('queries', () => {
         expect(destroyQuery).toEqual({
           action: 'delete',
           context: testContext,
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -156,6 +256,36 @@ describe('queries', () => {
         })
       })
 
+      test('with options', () => {
+        const query = queries()
+        const destroyQuery = query.destroy(
+          ['a', 'b'],
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
+
+        expect(destroyQuery).toEqual({
+          action: 'delete',
+          context: testContext,
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Key: {
+              hash: 'a.b',
+              range: 'a.b'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            },
+            ReturnConsumedCapacity: 'TOTAL'
+          }
+        })
+      })
+
       test('existing entity', () => {
         const query = queries()
         const destroyQuery = query.destroy({
@@ -166,6 +296,7 @@ describe('queries', () => {
         expect(destroyQuery).toEqual({
           context: testContext,
           action: 'delete',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Key: {
               hash: 'a.b',
@@ -193,8 +324,11 @@ describe('queries', () => {
         expect(listQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
@@ -214,8 +348,11 @@ describe('queries', () => {
         expect(listQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
@@ -230,14 +367,25 @@ describe('queries', () => {
       })
 
       test('with custom key names', () => {
-        const query = queries({ hashKeyName: 'customhash', rangeKeyName: 'customrange' })
+        const query = queries({
+          hashKeyName: 'customhash',
+          rangeKeyName: 'customrange'
+        })
         const listQuery = query.list(['a', 'b'], { IndexName: 'test' })
 
         expect(listQuery).toEqual({
-          context: { ...testContext, hashKeyName: 'customhash', rangeKeyName: 'customrange' },
+          context: {
+            ...testContext,
+            hashKeyName: 'customhash',
+            rangeKeyName: 'customrange'
+          },
           action: 'query',
+          key: { customhash: 'a.b', customrange: 'a.b' },
           request: {
-            KeyConditionExpression: '#customhash = :customhash AND begins_with(#customrange, :customrange)',
+            KeyConditionExpression: (
+              '#customhash = :customhash AND ' +
+              'begins_with(#customrange, :customrange)'
+            ),
             ExpressionAttributeNames: {
               '#customhash': 'customhash',
               '#customrange': 'customrange'
@@ -255,14 +403,20 @@ describe('queries', () => {
     describe('count', () => {
       test('basic', () => {
         const query = queries()
-        const countQuery = query.count(['a', 'b'])
+        const countQuery = query.count(
+          ['a', 'b'],
+          { ReturnConsumedCapacity: 'TOTAL' }
+        )
 
         expect(countQuery).toEqual({
           context: testContext,
           action: 'query',
+          key: { hash: 'a.b', range: 'a.b' },
           request: {
             Select: 'COUNT',
-            KeyConditionExpression: '#hash = :hash AND begins_with(#range, :range)',
+            KeyConditionExpression: (
+              '#hash = :hash AND begins_with(#range, :range)'
+            ),
             ExpressionAttributeNames: {
               '#hash': 'hash',
               '#range': 'range'
@@ -270,7 +424,8 @@ describe('queries', () => {
             ExpressionAttributeValues: {
               ':hash': 'a.b',
               ':range': 'a.b'
-            }
+            },
+            ReturnConsumedCapacity: 'TOTAL'
           }
         })
       })
