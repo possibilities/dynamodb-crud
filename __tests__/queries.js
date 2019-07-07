@@ -166,10 +166,10 @@ describe('queries', () => {
       })
     })
 
-    describe('update', () => {
+    describe('put', () => {
       test('basic', () => {
         const query = queries()
-        const patchQuery = query.update(['a', 'b'], { foo: 'bar' })
+        const patchQuery = query.put(['a', 'b'], { foo: 'bar' })
 
         expect(patchQuery).toEqual({
           body: { foo: 'bar' },
@@ -197,7 +197,7 @@ describe('queries', () => {
 
       test('with options', () => {
         const query = queries()
-        const patchQuery = query.update(
+        const patchQuery = query.put(
           ['a', 'b'],
           { foo: 'bar' },
           { ReturnConsumedCapacity: 'TOTAL' }

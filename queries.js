@@ -74,7 +74,7 @@ const post = context =>
     }
   }
 
-const update = context =>
+const put = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
     const putQuery = post(context)(key, body)
@@ -180,7 +180,7 @@ const queries = ({
     post: post(context),
     get: get(context),
     patch: patch(context),
-    update: update(context),
+    put: put(context),
     delete: del(context),
     list: list(context),
     count: count(context)
