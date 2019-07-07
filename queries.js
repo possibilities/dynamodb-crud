@@ -40,9 +40,13 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
   return `SET ${nameExpressions}`
 }
 
-const getConditionExpression = (context, comparator) =>
-  `#${context.hashKeyName} ${comparator} :${context.hashKeyName} AND ` +
-  `#${context.rangeKeyName} ${comparator} :${context.rangeKeyName}`
+const getKeyExistsCondition = context =>
+  `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
+  `#${context.rangeKeyName} = :${context.rangeKeyName}`
+
+const getKeyNotExistsCondition = context =>
+  `#${context.hashKeyName} <> :${context.hashKeyName} AND ` +
+  `#${context.rangeKeyName} <> :${context.rangeKeyName}`
 
 const getKeyConditionExpression = context =>
   `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
@@ -58,7 +62,7 @@ const post = context =>
       action: 'put',
       request: {
         Item: { ...key, ...body },
-        ConditionExpression: getConditionExpression(context, '<>'),
+        ConditionExpression: getKeyNotExistsCondition(context),
         ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
@@ -76,7 +80,7 @@ const put = context =>
       action: 'put',
       request: {
         Item: { ...key, ...body },
-        ConditionExpression: getConditionExpression(context, '='),
+        ConditionExpression: getKeyExistsCondition(context),
         ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
@@ -107,7 +111,7 @@ const patch = context =>
         Key: key,
         ReturnValues: 'ALL_NEW',
         UpdateExpression: getUpdateExpression(context, body),
-        ConditionExpression: getConditionExpression(context, '='),
+        ConditionExpression: getKeyExistsCondition(context),
         ExpressionAttributeNames: getAttributeNames(context, body, options),
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
@@ -127,7 +131,7 @@ const del = context => {
       action: 'delete',
       request: {
         Key: key,
-        ConditionExpression: getConditionExpression(context, '='),
+        ConditionExpression: getKeyExistsCondition(context),
         ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
