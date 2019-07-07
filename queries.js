@@ -53,7 +53,7 @@ const getKeyConditionExpression = context =>
   `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
-const create = context =>
+const post = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
     return {
@@ -77,7 +77,7 @@ const create = context =>
 const update = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
-    const putQuery = create(context)(key, body)
+    const putQuery = post(context)(key, body)
     return {
       ...putQuery,
       request: {
@@ -177,7 +177,7 @@ const queries = ({
 } = {}) => {
   const context = { hashKeyName, rangeKeyName, separator }
   return {
-    create: create(context),
+    post: post(context),
     get: get(context),
     patch: patch(context),
     update: update(context),

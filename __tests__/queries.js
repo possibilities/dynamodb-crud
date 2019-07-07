@@ -36,11 +36,11 @@ describe('queries', () => {
       })
     })
 
-    describe('create', () => {
+    describe('post', () => {
       test('basic', () => {
         const query = queries()
 
-        expect(query.create(['a', 'b'], { foo: 'bar' })).toEqual({
+        expect(query.post(['a', 'b'], { foo: 'bar' })).toEqual({
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
@@ -68,7 +68,7 @@ describe('queries', () => {
         const query = queries()
 
         expect(
-          query.create(
+          query.post(
             ['a', 'b'],
             { foo: 'bar' },
             { ReturnConsumedCapacity: 'TOTAL' }
