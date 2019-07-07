@@ -161,7 +161,7 @@ const count = context => (...args) => {
       ExpressionAttributeValues: getExpressionAttributeValues(context, key),
       ExpressionAttributeNames: getAttributeNames(context, {}, options),
       Select: 'COUNT',
-      ...options,
+      ...options
     }
   }
 }
