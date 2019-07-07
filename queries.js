@@ -39,7 +39,7 @@ const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
   const nameExpressions = Object
     .keys(omit(body, hashKeyName, rangeKeyName))
     .map(key => `#${key} = :${key}`).join(', ')
-  return `set ${nameExpressions}`
+  return `SET ${nameExpressions}`
 }
 
 const getConditionExpression = (context, comparator) =>

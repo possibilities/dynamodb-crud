@@ -114,7 +114,7 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
-            UpdateExpression: 'set #foo = :foo',
+            UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
               '#hash': 'hash',
@@ -148,7 +148,7 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
-            UpdateExpression: 'set #foo = :foo',
+            UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
               '#hash': 'hash',
