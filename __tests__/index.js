@@ -73,12 +73,12 @@ describe('dynamodb', () => {
         })
       })
 
-      describe('destroy', () => {
+      describe('delete', () => {
         test('basic', async () => {
           const query = queries()
           await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
-          await db.invoke(query.destroy(['a', 'b']))
+          await db.invoke(query.delete(['a', 'b']))
           expect(await db.invoke(query.get(['a', 'b']))).toBeNull()
         })
 
@@ -86,9 +86,9 @@ describe('dynamodb', () => {
           const query = queries()
           await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
-          expect(await db.invoke(query.destroy(['a', 'b']))).toEqual({})
+          expect(await db.invoke(query.delete(['a', 'b']))).toEqual({})
           expect(await db.invoke(query.get(['a', 'b']))).toBeNull()
-          expect(await db.invoke(query.destroy(['a', 'b']))).toBeNull()
+          expect(await db.invoke(query.delete(['a', 'b']))).toBeNull()
         })
       })
 
@@ -253,7 +253,7 @@ describe('dynamodb', () => {
       ])
     })
 
-    test('destroy', async () => {
+    test('delete', async () => {
       const query = queries()
 
       const itemsPosted = await db.transactWrite([
@@ -268,16 +268,16 @@ describe('dynamodb', () => {
         { foo: 125 }
       ])
 
-      const itemsDestroyed = await db.transactWrite([
-        query.destroy(['a', 'b'], { foo: 123 }),
-        query.destroy(['a', 'c'], { foo: 124 })
+      const itemsdeleteed = await db.transactWrite([
+        query.delete(['a', 'b'], { foo: 123 }),
+        query.delete(['a', 'c'], { foo: 124 })
       ])
 
-      expect(itemsDestroyed).toEqual({})
+      expect(itemsdeleteed).toEqual({})
 
-      expect(await db.transactWrite(query.destroy(['a', 'd']))).not.toBeNull()
+      expect(await db.transactWrite(query.delete(['a', 'd']))).not.toBeNull()
       // Check false positive
-      expect(await db.transactWrite(query.destroy(['a', 'x']))).toBeNull()
+      expect(await db.transactWrite(query.delete(['a', 'x']))).toBeNull()
     })
 
     test('single query', async () => {

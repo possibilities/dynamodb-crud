@@ -121,7 +121,7 @@ const patch = context =>
     }
   }
 
-const destroy = context => {
+const del = context => {
   return (...args) => {
     const [key, options = {}] = resolveKey(context, ...args)
     return {
@@ -181,7 +181,7 @@ const queries = ({
     get: get(context),
     patch: patch(context),
     update: update(context),
-    destroy: destroy(context),
+    delete: del(context),
     list: list(context),
     count: count(context)
   }
