@@ -2,11 +2,6 @@ const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
 const resolveKey = require('./modules/resolveKey')
 
-const prepareKey = (item, context) => ({
-  [context.hashKeyName]: item[context.hashKeyName],
-  [context.rangeKeyName]: item[context.rangeKeyName]
-})
-
 const getExpressionAttributeValues = ({ hashKeyName, rangeKeyName }, body) => {
   const data = {
     ...body,
@@ -62,10 +57,7 @@ const post = context =>
       context,
       action: 'put',
       request: {
-        Item: {
-          ...prepareKey(key, context),
-          ...body
-        },
+        Item: { ...key, ...body },
         ConditionExpression: getConditionExpression(context, '<>'),
         ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
@@ -95,7 +87,7 @@ const get = context =>
       key,
       context,
       action: 'get',
-      request: { Key: prepareKey(key, context), ...options }
+      request: { Key: key, ...options }
     }
   }
 
@@ -108,7 +100,7 @@ const patch = context =>
       context,
       action: 'update',
       request: {
-        Key: prepareKey(key, context),
+        Key: key,
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, body, options),
@@ -129,7 +121,7 @@ const del = context => {
       context,
       action: 'delete',
       request: {
-        Key: prepareKey(key, context),
+        Key: key,
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
