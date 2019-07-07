@@ -531,13 +531,15 @@ atob@^2.1.1:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-aws-dynamodb-axios@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/aws-dynamodb-axios/-/aws-dynamodb-axios-0.0.4.tgz#aa4477af1cbf9b71567c64a307443c13e2804c89"
-  integrity sha512-tV0JIu2EclrAQSeuD41aRNCBZrm++DcNhLtvjkSXcDSaNqnAuI1PdKAQG3MK8sxKx11kHjipma/vArz4Yj0qxA==
+aws-dynamodb-axios@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/aws-dynamodb-axios/-/aws-dynamodb-axios-0.0.5.tgz#fa516e8b50c72b39d18d60b12ab620bf7acd40f4"
+  integrity sha512-HQ2rMxZ+ApSNXbtipqmf+p3mJBzvz2Bhven2z/PF917tVNMP9iFo6bIoVqpwt8t8rX/B4p4t7+xSdZRHQPkLHg==
   dependencies:
     aws4 "^1.8.0"
     axios "^0.19.0"
+    debug "^4.1.1"
+    dynamo-converters "^3.1.9"
 
 aws-sign2@~0.7.0:
   version "0.7.0"
@@ -1054,6 +1056,11 @@ domexception@^1.0.1:
   integrity sha512-raigMkn7CJNNo6Ihro1fzG7wr3fHuYVytzquZKX5n0yizGsTcYgzdIUwj1X9pK0VvjeihV+XiclP+DjwbsSKug==
   dependencies:
     webidl-conversions "^4.0.2"
+
+dynamo-converters@^3.1.9:
+  version "3.1.9"
+  resolved "https://registry.yarnpkg.com/dynamo-converters/-/dynamo-converters-3.1.9.tgz#26225b5f03c04d6ca80df095ac7b5b8a0c958f58"
+  integrity sha512-2otbFJi6H7EBjzCRGrXPCzXPDzHY6iazXJHOWqAp+PAlU4r6bN6esog9Y1WGxuhu4qG8KY+vqYPoXsBn4qK9Pg==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"

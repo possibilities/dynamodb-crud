@@ -99,8 +99,8 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
       if (!getItems.Items && getItems.Count !== undefined) {
         return getItems.Count
       }
-      return unmarshall(getItems.Items)
-        .map(item => itemView(item, query.context))
+      return getItems.Items
+        .map(item => itemView(unmarshall(item), query.context))
 
     case 'update':
       const patchResult = await existsOrNull(db.update(request))
