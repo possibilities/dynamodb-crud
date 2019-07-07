@@ -22,11 +22,11 @@ describe('dynamodb', () => {
           const posted = await db.invoke(query.post(['a', 'b'], { foo: 123 }))
 
           // Check that post returns new item
-          expect(posted).toEqual({ foo: 123 })
+          expect(posted).toEqual({})
 
           // Check that new item is persisted
           const fetched = await db.invoke(query.get(['a', 'b']))
-          expect(fetched).toEqual({ foo: 123 })
+          expect(fetched).toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
         })
       })
 
@@ -34,7 +34,8 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
           await db.invoke(query.post(['a', 'b'], { foo: 123 }))
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
+          expect(await db.invoke(query.get(['a', 'b'])))
+            .toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
         })
 
         test('non-existent item', async () => {
@@ -49,7 +50,8 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
           await db.invoke(query.post(['a', 'b'], { foo: 123 }))
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
+          expect(await db.invoke(query.get(['a', 'b'])))
+            .toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
 
           // Time passes
           await new Promise(resolve => setTimeout(resolve, 10))
@@ -58,11 +60,11 @@ describe('dynamodb', () => {
           // Check that the patch returns the new object
           const postQuery = query2.patch(['a', 'b'], { foo: 124 })
           const posted = await db.invoke(postQuery)
-          expect(posted).toEqual({ foo: 124 })
+          expect(posted).toEqual({ foo: 124, hash: 'a.b', range: 'a.b' })
 
           // Check that the new object is persisted
           const fetched = await db.invoke(query2.get(['a', 'b']))
-          expect(fetched).toEqual({ foo: 124 })
+          expect(fetched).toEqual({ foo: 124, hash: 'a.b', range: 'a.b' })
         })
 
         test('non-existent item', async () => {
@@ -101,12 +103,12 @@ describe('dynamodb', () => {
           await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
           expect(await db.invoke(query.list(['a', 'b'], ['c']))).toEqual([
-            { foo: 123 },
-            { foo: 124 }
+            { foo: 123, hash: 'a.b', range: 'c.d' },
+            { foo: 124, hash: 'a.b', range: 'c.e' }
           ])
 
           expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual([
-            { foo: 125 }
+            { foo: 125, hash: 'a.b', range: 'd.f' }
           ])
         })
       })
@@ -190,8 +192,8 @@ describe('dynamodb', () => {
       ])
 
       expect(items).toEqual([
-        { foo: 123 },
-        { foo: 124 }
+        { foo: 123, hash: 'a.b', range: 'a.b' },
+        { foo: 124, hash: 'a.c', range: 'a.c' }
       ])
     })
 
@@ -205,7 +207,7 @@ describe('dynamodb', () => {
 
       const item = await db.transactGet(query.get(['a', 'b']))
 
-      expect(item).toEqual({ foo: 123 })
+      expect(item).toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
     })
   })
 

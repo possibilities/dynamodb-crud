@@ -1,2 +1,2 @@
-const isEmpty = obj => !Object.keys(obj).length
+const isEmpty = obj => !obj || !Object.keys(obj).length
 module.exports = isEmpty

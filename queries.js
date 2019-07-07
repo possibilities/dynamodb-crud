@@ -105,6 +105,7 @@ const patch = context =>
       action: 'update',
       request: {
         Key: key,
+        ReturnValues: 'ALL_NEW',
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
         ExpressionAttributeNames: getAttributeNames(context, body, options),

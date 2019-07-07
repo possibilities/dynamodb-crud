@@ -1,5 +1,4 @@
 const dynamodb = require('aws-dynamodb-axios')
-const omit = require('./modules/omit')
 const chunk = require('./modules/chunk')
 const upperFirst = require('./modules/upperFirst')
 const isEmpty = require('./modules/isEmpty')
@@ -60,9 +59,6 @@ const marshallRequest = request => {
   return marshalled
 }
 
-const itemView = (item, context) =>
-  omit(item, [context.hashKeyName, context.rangeKeyName])
-
 const ensureArray = arr => Array.isArray(arr)
   ? arr
   : [arr]
@@ -82,12 +78,11 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
       const getResult = await db.get(request)
       return isEmpty(getResult)
         ? null
-        : itemView(unmarshall(getResult.Item), query.context)
+        : unmarshall(getResult.Item)
 
     case 'put':
       const putResult = await db.put(request)
-      if (putResult === null) return null
-      return query.body
+      return putResult || null
 
     case 'delete':
       return await existsOrNull(db.delete(request))
@@ -100,12 +95,13 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
         return getItems.Count
       }
       return getItems.Items
-        .map(item => itemView(unmarshall(item), query.context))
+        .map(item => unmarshall(item))
 
     case 'update':
       const patchResult = await existsOrNull(db.update(request))
-      if (patchResult === null) return null
-      return query.body
+      return isEmpty(patchResult)
+        ? null
+        : unmarshall(patchResult.Attributes)
   }
 
   throw new Error(`query does not support ${query.action} action`)
@@ -140,10 +136,7 @@ const batchGet = (db, config = {}) => async (queries, options = {}) => {
     items = [...items, ...responses.Responses[config.tableName]]
   }
 
-  return items.map((item, index) => itemView(
-    unmarshall(item),
-    queries[index].context)
-  )
+  return items.map((item, index) => unmarshall(item))
 }
 
 const transactGet = (db, config = {}) => async (queries, options = {}) => {
@@ -164,11 +157,7 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
     items = [...items, ...responses.Responses]
   }
 
-  const preparedItems = items.map((item, index) => itemView(
-    unmarshall(item.Item),
-    queriesArr[index].context)
-  )
-
+  const preparedItems = items.map((item, index) => unmarshall(item.Item))
   return queries.length > 1
     ? preparedItems
     : preparedItems.pop()

@@ -114,6 +114,7 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
+            ReturnValues: 'ALL_NEW',
             UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
@@ -148,6 +149,7 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
+            ReturnValues: 'ALL_NEW',
             UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
