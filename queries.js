@@ -69,12 +69,16 @@ const post = context =>
 const put = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
-    const putQuery = post(context)(key, body)
     return {
-      ...putQuery,
+      key,
+      body,
+      context,
+      action: 'put',
       request: {
-        ...putQuery.request,
+        Item: { ...key, ...body },
         ConditionExpression: getConditionExpression(context, '='),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
+        ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
     }
@@ -146,18 +150,18 @@ const list = context => (...args) => {
   }
 }
 
-const count = context => {
-  const buildListQuery = list(context)
-  return (...args) => {
-    const [key, options = {}] = resolveKey(context, ...args)
-    const listQuery = buildListQuery(key, options)
-    return {
-      ...listQuery,
-      request: {
-        ...listQuery.request,
-        Select: 'COUNT',
-        ...options
-      }
+const count = context => (...args) => {
+  const [key, options = {}] = resolveKey(context, ...args)
+  return {
+    key,
+    context,
+    action: 'query',
+    request: {
+      KeyConditionExpression: getKeyConditionExpression(context),
+      ExpressionAttributeValues: getExpressionAttributeValues(context, key),
+      ExpressionAttributeNames: getAttributeNames(context, {}, options),
+      Select: 'COUNT',
+      ...options,
     }
   }
 }
