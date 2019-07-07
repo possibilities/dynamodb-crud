@@ -26,13 +26,16 @@ const keyMirror = obj => {
   return mirror
 }
 
-const getAttributeNames = ({ hashKeyName, rangeKeyName }, body = {}) => {
+const getAttributeNames = ({ hashKeyName, rangeKeyName }, body, options) => {
   const data = {
     ...keyMirror(body),
     [hashKeyName]: hashKeyName,
     [rangeKeyName]: rangeKeyName
   }
-  return fromPairs(Object.keys(data).map(key => ([`#${key}`, data[key]])))
+  return {
+    ...(options.ExpressionAttributeNames || {}),
+    ...fromPairs(Object.keys(data).map(key => ([`#${key}`, data[key]])))
+  }
 }
 
 const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
@@ -64,7 +67,7 @@ const create = context =>
           ...body
         },
         ConditionExpression: getConditionExpression(context, '<>'),
-        ExpressionAttributeNames: getAttributeNames(context),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
@@ -108,7 +111,7 @@ const patch = context =>
         Key: prepareKey(key, context),
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getConditionExpression(context, '='),
-        ExpressionAttributeNames: getAttributeNames(context, body),
+        ExpressionAttributeNames: getAttributeNames(context, body, options),
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           { ...key, ...body }
@@ -128,7 +131,7 @@ const destroy = context => {
       request: {
         Key: prepareKey(key, context),
         ConditionExpression: getConditionExpression(context, '='),
-        ExpressionAttributeNames: getAttributeNames(context),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
@@ -144,9 +147,9 @@ const list = context => (...args) => {
     action: 'query',
     request: {
       KeyConditionExpression: getKeyConditionExpression(context),
-      ExpressionAttributeNames: getAttributeNames(context),
       ExpressionAttributeValues: getExpressionAttributeValues(context, key),
-      ...options
+      ...options,
+      ExpressionAttributeNames: getAttributeNames(context, {}, options)
     }
   }
 }
