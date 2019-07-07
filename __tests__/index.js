@@ -16,30 +16,31 @@ describe('dynamodb', () => {
 
   describe('invoke', () => {
     describe('operations', () => {
-      describe('create', () => {
+      describe('post', () => {
         test('basic', async () => {
           const query = queries()
-          const created = await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+          const posted = await db.invoke(query.post(['a', 'b'], { foo: 123 }))
 
-          // Check that create returns new item
-          expect(created).toEqual({ foo: 123 })
+          // Check that post returns new item
+          expect(posted).toEqual({})
 
           // Check that new item is persisted
           const fetched = await db.invoke(query.get(['a', 'b']))
-          expect(fetched).toEqual({ foo: 123 })
+          expect(fetched).toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
         })
       })
 
       describe('get', () => {
         test('basic', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
+          expect(await db.invoke(query.get(['a', 'b'])))
+            .toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
         })
 
         test('non-existent item', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
           expect(await db.invoke(query.get(['a', 'x']))).toBeNull()
         })
@@ -48,47 +49,48 @@ describe('dynamodb', () => {
       describe('patch', () => {
         test('basic', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-          expect(await db.invoke(query.get(['a', 'b']))).toEqual({ foo: 123 })
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
+          expect(await db.invoke(query.get(['a', 'b'])))
+            .toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
 
           // Time passes
           await new Promise(resolve => setTimeout(resolve, 10))
           const query2 = queries()
 
           // Check that the patch returns the new object
-          const createQuery = query2.patch(['a', 'b'], { foo: 124 })
-          const created = await db.invoke(createQuery)
-          expect(created).toEqual({ foo: 124 })
+          const postQuery = query2.patch(['a', 'b'], { foo: 124 })
+          const posted = await db.invoke(postQuery)
+          expect(posted).toEqual({ foo: 124, hash: 'a.b', range: 'a.b' })
 
           // Check that the new object is persisted
           const fetched = await db.invoke(query2.get(['a', 'b']))
-          expect(fetched).toEqual({ foo: 124 })
+          expect(fetched).toEqual({ foo: 124, hash: 'a.b', range: 'a.b' })
         })
 
         test('non-existent item', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.patch(['a', 'b'], { foo: 124 }))).not.toBeNull()
           expect(await db.invoke(query.patch(['a', 'x'], { foo: 125 }))).toBeNull()
         })
       })
 
-      describe('destroy', () => {
+      describe('delete', () => {
         test('basic', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
-          await db.invoke(query.destroy(['a', 'b']))
+          await db.invoke(query.delete(['a', 'b']))
           expect(await db.invoke(query.get(['a', 'b']))).toBeNull()
         })
 
         test('non-existent item', async () => {
           const query = queries()
-          await db.invoke(query.create(['a', 'b'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], { foo: 123 }))
           expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
-          expect(await db.invoke(query.destroy(['a', 'b']))).toEqual({})
+          expect(await db.invoke(query.delete(['a', 'b']))).toEqual({})
           expect(await db.invoke(query.get(['a', 'b']))).toBeNull()
-          expect(await db.invoke(query.destroy(['a', 'b']))).toBeNull()
+          expect(await db.invoke(query.delete(['a', 'b']))).toBeNull()
         })
       })
 
@@ -96,17 +98,17 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
 
-          await db.invoke(query.create(['a', 'b'], ['c', 'd'], { foo: 123 }))
-          await db.invoke(query.create(['a', 'b'], ['c', 'e'], { foo: 124 }))
-          await db.invoke(query.create(['a', 'b'], ['d', 'f'], { foo: 125 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
           expect(await db.invoke(query.list(['a', 'b'], ['c']))).toEqual([
-            { foo: 123 },
-            { foo: 124 }
+            { foo: 123, hash: 'a.b', range: 'c.d' },
+            { foo: 124, hash: 'a.b', range: 'c.e' }
           ])
 
           expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual([
-            { foo: 125 }
+            { foo: 125, hash: 'a.b', range: 'd.f' }
           ])
         })
       })
@@ -115,9 +117,9 @@ describe('dynamodb', () => {
         test('basic', async () => {
           const query = queries()
 
-          await db.invoke(query.create(['a', 'b'], ['c', 'd'], { foo: 123 }))
-          await db.invoke(query.create(['a', 'b'], ['c', 'e'], { foo: 124 }))
-          await db.invoke(query.create(['a', 'b'], ['d', 'f'], { foo: 125 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
           expect(await db.invoke(query.count(['a', 'b'], ['c']))).toEqual(2)
           expect(await db.invoke(query.count(['a', 'b'], ['d']))).toEqual(1)
@@ -128,8 +130,8 @@ describe('dynamodb', () => {
     test('with multiple queries', async () => {
       const query = queries()
 
-      await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-      await db.invoke(query.create(['a', 'c'], { foo: 124 }))
+      await db.invoke(query.post(['a', 'b'], { foo: 123 }))
+      await db.invoke(query.post(['a', 'c'], { foo: 124 }))
 
       const [one, two] = await db.invoke([
         query.get(['a', 'b']),
@@ -146,8 +148,8 @@ describe('dynamodb', () => {
       const query = queries()
 
       await db.batchWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
       const items = await db.batchGet([
@@ -164,8 +166,8 @@ describe('dynamodb', () => {
     test('basic', async () => {
       const query = queries()
       await db.batchWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
       expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
@@ -180,8 +182,8 @@ describe('dynamodb', () => {
       const query = queries()
 
       await db.transactWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
       const items = await db.transactGet([
@@ -190,8 +192,8 @@ describe('dynamodb', () => {
       ])
 
       expect(items).toEqual([
-        { foo: 123 },
-        { foo: 124 }
+        { foo: 123, hash: 'a.b', range: 'a.b' },
+        { foo: 124, hash: 'a.c', range: 'a.c' }
       ])
     })
 
@@ -199,13 +201,13 @@ describe('dynamodb', () => {
       const query = queries()
 
       await db.transactWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
       const item = await db.transactGet(query.get(['a', 'b']))
 
-      expect(item).toEqual({ foo: 123 })
+      expect(item).toEqual({ foo: 123, hash: 'a.b', range: 'a.b' })
     })
   })
 
@@ -214,8 +216,8 @@ describe('dynamodb', () => {
       const query = queries()
 
       const items = await db.transactWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
       expect(items).toEqual([
@@ -232,12 +234,12 @@ describe('dynamodb', () => {
     test('patch', async () => {
       const query = queries()
 
-      const itemsCreated = await db.transactWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 })
+      const itemsPosted = await db.transactWrite([
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 })
       ])
 
-      expect(itemsCreated).toEqual([
+      expect(itemsPosted).toEqual([
         { foo: 123 },
         { foo: 124 }
       ])
@@ -253,38 +255,38 @@ describe('dynamodb', () => {
       ])
     })
 
-    test('destroy', async () => {
+    test('delete', async () => {
       const query = queries()
 
-      const itemsCreated = await db.transactWrite([
-        query.create(['a', 'b'], { foo: 123 }),
-        query.create(['a', 'c'], { foo: 124 }),
-        query.create(['a', 'd'], { foo: 125 })
+      const itemsPosted = await db.transactWrite([
+        query.post(['a', 'b'], { foo: 123 }),
+        query.post(['a', 'c'], { foo: 124 }),
+        query.post(['a', 'd'], { foo: 125 })
       ])
 
-      expect(itemsCreated).toEqual([
+      expect(itemsPosted).toEqual([
         { foo: 123 },
         { foo: 124 },
         { foo: 125 }
       ])
 
-      const itemsDestroyed = await db.transactWrite([
-        query.destroy(['a', 'b'], { foo: 123 }),
-        query.destroy(['a', 'c'], { foo: 124 })
+      const itemsdeleteed = await db.transactWrite([
+        query.delete(['a', 'b'], { foo: 123 }),
+        query.delete(['a', 'c'], { foo: 124 })
       ])
 
-      expect(itemsDestroyed).toEqual({})
+      expect(itemsdeleteed).toEqual({})
 
-      expect(await db.transactWrite(query.destroy(['a', 'd']))).not.toBeNull()
+      expect(await db.transactWrite(query.delete(['a', 'd']))).not.toBeNull()
       // Check false positive
-      expect(await db.transactWrite(query.destroy(['a', 'x']))).toBeNull()
+      expect(await db.transactWrite(query.delete(['a', 'x']))).toBeNull()
     })
 
     test('single query', async () => {
       const query = queries()
 
       const item =
-        await db.transactWrite(query.create(['a', 'b'], { foo: 123 }))
+        await db.transactWrite(query.post(['a', 'b'], { foo: 123 }))
       expect(item).toEqual({ foo: 123 })
 
       expect(await db.invoke(query.get(['a', 'b']))).not.toBeNull()
@@ -299,7 +301,7 @@ describe('dynamodb', () => {
       let requests = []
 
       const query = queries()
-      await db.invoke(query.create(['a', 'a'], { foo: 123 }))
+      await db.invoke(query.post(['a', 'a'], { foo: 123 }))
 
       db.interceptors.request.use(query => {
         requests.push(query)
@@ -312,29 +314,29 @@ describe('dynamodb', () => {
         return response
       })
 
-      await db.invoke(query.create(['a', 'b'], { foo: 123 }))
-      await db.invoke(query.create(['a', 'c'], { foo: 123 }))
-      await db.invoke(query.create(['a', 'd'], { foo: 123 }))
+      await db.invoke(query.post(['a', 'b'], { foo: 123 }))
+      await db.invoke(query.post(['a', 'c'], { foo: 123 }))
+      await db.invoke(query.post(['a', 'd'], { foo: 123 }))
 
       expect(requests).toHaveLength(3)
       expect(responses).toHaveLength(3)
 
-      await db.transactWrite(query.create(['a', 'e'], { foo: 123 }))
+      await db.transactWrite(query.post(['a', 'e'], { foo: 123 }))
 
       expect(requests).toHaveLength(4)
       expect(responses).toHaveLength(4)
 
       await db.transactWrite([
-        query.create(['a', 'f'], { foo: 123 }),
-        query.create(['a', 'g'], { foo: 123 })
+        query.post(['a', 'f'], { foo: 123 }),
+        query.post(['a', 'g'], { foo: 123 })
       ])
 
       expect(requests).toHaveLength(6)
       expect(responses).toHaveLength(6)
 
       await db.batchWrite([
-        query.create(['a', 'f'], { foo: 123 }),
-        query.create(['a', 'g'], { foo: 123 })
+        query.post(['a', 'f'], { foo: 123 }),
+        query.post(['a', 'g'], { foo: 123 })
       ])
 
       expect(requests).toHaveLength(8)

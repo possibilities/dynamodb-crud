@@ -36,11 +36,11 @@ describe('queries', () => {
       })
     })
 
-    describe('create', () => {
+    describe('post', () => {
       test('basic', () => {
         const query = queries()
 
-        expect(query.create(['a', 'b'], { foo: 'bar' })).toEqual({
+        expect(query.post(['a', 'b'], { foo: 'bar' })).toEqual({
           body: { foo: 'bar' },
           context: testContext,
           action: 'put',
@@ -68,7 +68,7 @@ describe('queries', () => {
         const query = queries()
 
         expect(
-          query.create(
+          query.post(
             ['a', 'b'],
             { foo: 'bar' },
             { ReturnConsumedCapacity: 'TOTAL' }
@@ -114,7 +114,8 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
-            UpdateExpression: 'set #foo = :foo',
+            ReturnValues: 'ALL_NEW',
+            UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
               '#hash': 'hash',
@@ -148,7 +149,8 @@ describe('queries', () => {
               hash: 'a.b',
               range: 'a.b'
             },
-            UpdateExpression: 'set #foo = :foo',
+            ReturnValues: 'ALL_NEW',
+            UpdateExpression: 'SET #foo = :foo',
             ConditionExpression: '#hash = :hash AND #range = :range',
             ExpressionAttributeNames: {
               '#hash': 'hash',
@@ -166,10 +168,10 @@ describe('queries', () => {
       })
     })
 
-    describe('update', () => {
+    describe('put', () => {
       test('basic', () => {
         const query = queries()
-        const patchQuery = query.update(['a', 'b'], { foo: 'bar' })
+        const patchQuery = query.put(['a', 'b'], { foo: 'bar' })
 
         expect(patchQuery).toEqual({
           body: { foo: 'bar' },
@@ -197,7 +199,7 @@ describe('queries', () => {
 
       test('with options', () => {
         const query = queries()
-        const patchQuery = query.update(
+        const patchQuery = query.put(
           ['a', 'b'],
           { foo: 'bar' },
           { ReturnConsumedCapacity: 'TOTAL' }
@@ -229,12 +231,12 @@ describe('queries', () => {
       })
     })
 
-    describe('destroy', () => {
+    describe('delete', () => {
       test('basic', () => {
         const query = queries()
-        const destroyQuery = query.destroy(['a', 'b'])
+        const deleteQuery = query.delete(['a', 'b'])
 
-        expect(destroyQuery).toEqual({
+        expect(deleteQuery).toEqual({
           action: 'delete',
           context: testContext,
           key: { hash: 'a.b', range: 'a.b' },
@@ -258,12 +260,12 @@ describe('queries', () => {
 
       test('with options', () => {
         const query = queries()
-        const destroyQuery = query.destroy(
+        const deleteQuery = query.delete(
           ['a', 'b'],
           { ReturnConsumedCapacity: 'TOTAL' }
         )
 
-        expect(destroyQuery).toEqual({
+        expect(deleteQuery).toEqual({
           action: 'delete',
           context: testContext,
           key: { hash: 'a.b', range: 'a.b' },
@@ -288,12 +290,12 @@ describe('queries', () => {
 
       test('existing entity', () => {
         const query = queries()
-        const destroyQuery = query.destroy({
+        const deleteQuery = query.delete({
           hash: 'a.b',
           range: 'a.b'
         })
 
-        expect(destroyQuery).toEqual({
+        expect(deleteQuery).toEqual({
           context: testContext,
           action: 'delete',
           key: { hash: 'a.b', range: 'a.b' },

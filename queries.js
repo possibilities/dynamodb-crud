@@ -2,11 +2,6 @@ const omit = require('./modules/omit')
 const fromPairs = require('./modules/fromPairs')
 const resolveKey = require('./modules/resolveKey')
 
-const prepareKey = (item, context) => ({
-  [context.hashKeyName]: item[context.hashKeyName],
-  [context.rangeKeyName]: item[context.rangeKeyName]
-})
-
 const getExpressionAttributeValues = ({ hashKeyName, rangeKeyName }, body) => {
   const data = {
     ...body,
@@ -26,31 +21,38 @@ const keyMirror = obj => {
   return mirror
 }
 
-const getAttributeNames = ({ hashKeyName, rangeKeyName }, body = {}) => {
+const getAttributeNames = ({ hashKeyName, rangeKeyName }, body, options) => {
   const data = {
     ...keyMirror(body),
     [hashKeyName]: hashKeyName,
     [rangeKeyName]: rangeKeyName
   }
-  return fromPairs(Object.keys(data).map(key => ([`#${key}`, data[key]])))
+  return {
+    ...(options.ExpressionAttributeNames || {}),
+    ...fromPairs(Object.keys(data).map(key => ([`#${key}`, data[key]])))
+  }
 }
 
 const getUpdateExpression = ({ hashKeyName, rangeKeyName }, body) => {
   const nameExpressions = Object
     .keys(omit(body, hashKeyName, rangeKeyName))
     .map(key => `#${key} = :${key}`).join(', ')
-  return `set ${nameExpressions}`
+  return `SET ${nameExpressions}`
 }
 
-const getConditionExpression = (context, comparator) =>
-  `#${context.hashKeyName} ${comparator} :${context.hashKeyName} AND ` +
-  `#${context.rangeKeyName} ${comparator} :${context.rangeKeyName}`
+const getKeyExistsCondition = context =>
+  `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
+  `#${context.rangeKeyName} = :${context.rangeKeyName}`
+
+const getKeyNotExistsCondition = context =>
+  `#${context.hashKeyName} <> :${context.hashKeyName} AND ` +
+  `#${context.rangeKeyName} <> :${context.rangeKeyName}`
 
 const getKeyConditionExpression = context =>
   `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
-const create = context =>
+const post = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
     return {
@@ -59,27 +61,28 @@ const create = context =>
       context,
       action: 'put',
       request: {
-        Item: {
-          ...prepareKey(key, context),
-          ...body
-        },
-        ConditionExpression: getConditionExpression(context, '<>'),
-        ExpressionAttributeNames: getAttributeNames(context),
+        Item: { ...key, ...body },
+        ConditionExpression: getKeyNotExistsCondition(context),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
     }
   }
 
-const update = context =>
+const put = context =>
   (...args) => {
     const [key, body, options = {}] = resolveKey(context, ...args)
-    const putQuery = create(context)(key, body)
     return {
-      ...putQuery,
+      key,
+      body,
+      context,
+      action: 'put',
       request: {
-        ...putQuery.request,
-        ConditionExpression: getConditionExpression(context, '='),
+        Item: { ...key, ...body },
+        ConditionExpression: getKeyExistsCondition(context),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
+        ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
     }
@@ -92,7 +95,7 @@ const get = context =>
       key,
       context,
       action: 'get',
-      request: { Key: prepareKey(key, context), ...options }
+      request: { Key: key, ...options }
     }
   }
 
@@ -105,10 +108,11 @@ const patch = context =>
       context,
       action: 'update',
       request: {
-        Key: prepareKey(key, context),
+        Key: key,
+        ReturnValues: 'ALL_NEW',
         UpdateExpression: getUpdateExpression(context, body),
-        ConditionExpression: getConditionExpression(context, '='),
-        ExpressionAttributeNames: getAttributeNames(context, body),
+        ConditionExpression: getKeyExistsCondition(context),
+        ExpressionAttributeNames: getAttributeNames(context, body, options),
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           { ...key, ...body }
@@ -118,7 +122,7 @@ const patch = context =>
     }
   }
 
-const destroy = context => {
+const del = context => {
   return (...args) => {
     const [key, options = {}] = resolveKey(context, ...args)
     return {
@@ -126,9 +130,9 @@ const destroy = context => {
       context,
       action: 'delete',
       request: {
-        Key: prepareKey(key, context),
-        ConditionExpression: getConditionExpression(context, '='),
-        ExpressionAttributeNames: getAttributeNames(context),
+        Key: key,
+        ConditionExpression: getKeyExistsCondition(context),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options
       }
@@ -144,25 +148,25 @@ const list = context => (...args) => {
     action: 'query',
     request: {
       KeyConditionExpression: getKeyConditionExpression(context),
-      ExpressionAttributeNames: getAttributeNames(context),
       ExpressionAttributeValues: getExpressionAttributeValues(context, key),
-      ...options
+      ...options,
+      ExpressionAttributeNames: getAttributeNames(context, {}, options)
     }
   }
 }
 
-const count = context => {
-  const buildListQuery = list(context)
-  return (...args) => {
-    const [key, options = {}] = resolveKey(context, ...args)
-    const listQuery = buildListQuery(key, options)
-    return {
-      ...listQuery,
-      request: {
-        ...listQuery.request,
-        Select: 'COUNT',
-        ...options
-      }
+const count = context => (...args) => {
+  const [key, options = {}] = resolveKey(context, ...args)
+  return {
+    key,
+    context,
+    action: 'query',
+    request: {
+      KeyConditionExpression: getKeyConditionExpression(context),
+      ExpressionAttributeValues: getExpressionAttributeValues(context, key),
+      ExpressionAttributeNames: getAttributeNames(context, {}, options),
+      Select: 'COUNT',
+      ...options
     }
   }
 }
@@ -174,11 +178,11 @@ const queries = ({
 } = {}) => {
   const context = { hashKeyName, rangeKeyName, separator }
   return {
-    create: create(context),
+    post: post(context),
     get: get(context),
     patch: patch(context),
-    update: update(context),
-    destroy: destroy(context),
+    put: put(context),
+    delete: del(context),
     list: list(context),
     count: count(context)
   }

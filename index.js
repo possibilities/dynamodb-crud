@@ -1,10 +1,9 @@
 const dynamodb = require('aws-dynamodb-axios')
-const omit = require('./modules/omit')
 const chunk = require('./modules/chunk')
+const upperFirst = require('./modules/upperFirst')
+const isEmpty = require('./modules/isEmpty')
+const compose = require('./modules/compose')
 const { unmarshall, marshall } = require('aws-dynamodb-axios')
-
-const isEmpty = obj => !Object.keys(obj).length
-const upperFirst = str => str[0].toUpperCase() + str.slice(1)
 
 const failedConditionType = 'ConditionalCheckFailedException'
 const failedTranactionConditionType = 'TransactionCanceledException'
@@ -60,9 +59,6 @@ const marshallRequest = request => {
   return marshalled
 }
 
-const itemView = (item, context) =>
-  omit(item, [context.hashKeyName, context.rangeKeyName])
-
 const ensureArray = arr => Array.isArray(arr)
   ? arr
   : [arr]
@@ -82,12 +78,11 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
       const getResult = await db.get(request)
       return isEmpty(getResult)
         ? null
-        : itemView(unmarshall(getResult.Item), query.context)
+        : unmarshall(getResult.Item)
 
     case 'put':
       const putResult = await db.put(request)
-      if (putResult === null) return null
-      return query.body
+      return putResult || null
 
     case 'delete':
       return await existsOrNull(db.delete(request))
@@ -100,16 +95,13 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
         return getItems.Count
       }
       return getItems.Items
-        .map(item => itemView(unmarshall(item), query.context))
+        .map(item => unmarshall(item))
 
     case 'update':
       const patchResult = await existsOrNull(db.update(request))
-      if (patchResult === null) return null
-      return invoke(db, config)({
-        action: 'get',
-        context: query.context,
-        request: { Key: query.request.Key }
-      })
+      return isEmpty(patchResult)
+        ? null
+        : unmarshall(patchResult.Attributes)
   }
 
   throw new Error(`query does not support ${query.action} action`)
@@ -144,10 +136,7 @@ const batchGet = (db, config = {}) => async (queries, options = {}) => {
     items = [...items, ...responses.Responses[config.tableName]]
   }
 
-  return items.map((item, index) => itemView(
-    unmarshall(item),
-    queries[index].context)
-  )
+  return items.map((item, index) => unmarshall(item))
 }
 
 const transactGet = (db, config = {}) => async (queries, options = {}) => {
@@ -168,11 +157,7 @@ const transactGet = (db, config = {}) => async (queries, options = {}) => {
     items = [...items, ...responses.Responses]
   }
 
-  const preparedItems = items.map((item, index) => itemView(
-    unmarshall(item.Item),
-    queriesArr[index].context)
-  )
-
+  const preparedItems = items.map((item, index) => unmarshall(item.Item))
   return queries.length > 1
     ? preparedItems
     : preparedItems.pop()
@@ -213,8 +198,6 @@ const transactWrite = (db, config = {}) => async queries => {
   return bodies
 }
 
-const compose = (...fns) => (fns.length ? fns : [x => x]).reduce((f, g) => (...args) => f(g(...args)))
-
 const crud = (config = {}) => {
   const db = dynamodb(config)
   const interceptors = { request: [], response: [] }
@@ -223,11 +206,11 @@ const crud = (config = {}) => {
     const interceptRequest = compose(...interceptors.request)
     const interceptResponse = compose(...interceptors.response)
     queries = Array.isArray(queries)
-      ? queries.map(interceptRequest)
-      : interceptRequest(queries)
+      ? await Promise.all(queries.map(interceptRequest))
+      : await interceptRequest(queries)
     const responses = await handler(queries, ...args)
     return Array.isArray(responses)
-      ? responses.map((response, i) => interceptResponse(response, queries[i]))
+      ? Promise.all(responses.map((response, i) => interceptResponse(response, queries[i])))
       : interceptResponse(responses, queries)
   }
 

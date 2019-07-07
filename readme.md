@@ -16,15 +16,15 @@ Provided query builders emit queries that can be executed by the [operation help
 
 ##### `get()`
 
-##### `create()`
+##### `post()`
 
 ##### `patch()`
 
-##### `destroy()`
+##### `delete()`
 
-##### `update()`
+##### `put()`
 
-##### `list()`
+##### `query()`
 
 ##### `count()`
 
