@@ -50,7 +50,7 @@ In addition to the [actions-based API provided by DynamoDb with Axios](https://g
 
 #### Interceptors
 
-[Axios inspired](https://github.com/axios/axios#interceptors) interceptors are provided for injecting behavior into database interactions.
+[Axios inspired](https://github.com/axios/axios#interceptors) interceptors are provided for injecting and extracting behavior from requests and responses.
 
 ##### `dynamodb.interceptors.request.use(fn) => (query)`
 
