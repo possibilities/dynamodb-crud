@@ -208,7 +208,7 @@ const transactWrite = (db, config = {}) => async queries => {
   return bodies
 }
 
-const crud = (config = {}) => {
+const rest = (config = {}) => {
   const db = dynamodb(config)
   const interceptors = { request: [], response: [] }
 
@@ -237,4 +237,4 @@ const crud = (config = {}) => {
   }
 }
 
-module.exports = crud
+module.exports = rest

@@ -1,6 +1,6 @@
-# DynamoDB CRUD client [![CircleCI](https://circleci.com/gh/possibilities/dynamodb-crud.svg?style=svg)](https://circleci.com/gh/possibilities/dynamodb-crud)
+# DynamoDB-RESTful client [![CircleCI](https://circleci.com/gh/possibilities/dynamodb-rest.svg?style=svg)](https://circleci.com/gh/possibilities/dynamodb-rest)
 
-An opinionated CRUD client for [AWS DynamoDB](https://aws.amazon.com/dynamodb/) based on [AWS DynamoDb with Axios](https://github.com/possibilities/aws-dynamodb-axios)
+An opinionated client for [AWS DynamoDB](https://aws.amazon.com/dynamodb/) based on [AWS DynamoDb with Axios](https://github.com/possibilities/aws-dynamodb-axios)
 
 This library is for generating composite key-based queries. See [AWS re:Invent 2018: Amazon DynamoDB Deep Dive: Advanced Design Patterns for DynamoDB (DAT401)](https://www.youtube.com/watch?v=HaEPXoXVf2k) for a primer on this approach to NoSQL database design.
 
