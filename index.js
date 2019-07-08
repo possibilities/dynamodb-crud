@@ -56,6 +56,12 @@ const marshallRequest = request => {
       ExpressionAttributeValues: marshall(request.ExpressionAttributeValues)
     }
   }
+  if (request.ExclusiveStartKey) {
+    marshalled = {
+      ...marshalled,
+      ExclusiveStartKey: marshall(request.ExclusiveStartKey)
+    }
+  }
   return marshalled
 }
 
@@ -91,10 +97,15 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
 
     case 'query':
       const getItems = await db.query(request)
-      // Detect that we're invoking a count() vs. query()
-      return (!getItems.Items && getItems.Count !== undefined)
-        ? getItems.Count
-        : getItems.Items.map(item => unmarshall(item))
+      // Detect that we're invoking a count()
+      if (!getItems.Items && getItems.Count !== undefined) {
+        return getItems.Count
+      }
+      const items = getItems.Items.map(item => unmarshall(item))
+      const lastKey = getItems.LastEvaluatedKey
+        ? unmarshall(getItems.LastEvaluatedKey)
+        : null
+      return { items, lastKey }
 
     case 'update':
       const patchResult = await existsOrNull(db.update(request))
@@ -103,7 +114,7 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
         : unmarshall(patchResult.Attributes)
   }
 
-  throw new Error(`query does not support ${query.action} action`)
+  throw new Error(`\`invoke\` does not support ${query.action} action`)
 }
 
 const batchWrite = (db, config = {}) => async (queries, options = {}) => {

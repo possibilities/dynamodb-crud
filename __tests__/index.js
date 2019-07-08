@@ -102,14 +102,64 @@ describe('dynamodb', () => {
           await db.invoke(query.post(['a', 'b'], ['c', 'e'], { foo: 124 }))
           await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
 
-          expect(await db.invoke(query.list(['a', 'b'], ['c']))).toEqual([
-            { foo: 123, hash: 'a.b', range: 'c.d' },
-            { foo: 124, hash: 'a.b', range: 'c.e' }
-          ])
+          expect(await db.invoke(query.list(['a', 'b'], ['c']))).toEqual({
+            items: [
+              { foo: 123, hash: 'a.b', range: 'c.d' },
+              { foo: 124, hash: 'a.b', range: 'c.e' }
+            ],
+            lastKey: null
+          })
 
-          expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual([
-            { foo: 125, hash: 'a.b', range: 'd.f' }
-          ])
+          expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual({
+            items: [
+              { foo: 125, hash: 'a.b', range: 'd.f' }
+            ],
+            lastKey: null
+          })
+        })
+
+        test('with lastKey', async () => {
+          const query = queries()
+
+          await db.invoke(query.post(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
+
+          expect(await db.invoke(query.list(['a', 'b'], ['c'], { Limit: 1 }))).toEqual({
+            items: [
+              { foo: 123, hash: 'a.b', range: 'c.d' }
+            ],
+            lastKey: { hash: 'a.b', range: 'c.d' }
+          })
+
+          expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual({
+            items: [
+              { foo: 125, hash: 'a.b', range: 'd.f' }
+            ],
+            lastKey: null
+          })
+        })
+
+        test('with startKey', async () => {
+          const query = queries()
+
+          await db.invoke(query.post(['a', 'b'], ['c', 'd'], { foo: 123 }))
+          await db.invoke(query.post(['a', 'b'], ['c', 'e'], { foo: 124 }))
+          await db.invoke(query.post(['a', 'b'], ['d', 'f'], { foo: 125 }))
+
+          expect(await db.invoke(query.list(['a', 'b'], ['c'], { Limit: 1 }))).toEqual({
+            items: [
+              { foo: 123, hash: 'a.b', range: 'c.d' }
+            ],
+            lastKey: { hash: 'a.b', range: 'c.d' }
+          })
+
+          expect(await db.invoke(query.list(['a', 'b'], ['d']))).toEqual({
+            items: [
+              { foo: 125, hash: 'a.b', range: 'd.f' }
+            ],
+            lastKey: null
+          })
         })
       })
 
