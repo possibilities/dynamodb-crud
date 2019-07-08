@@ -360,7 +360,7 @@ describe('dynamodb', () => {
 
       let responses = []
       db.interceptors.response.use(response => {
-        responses.push(query)
+        responses.push(response)
         return response
       })
 
