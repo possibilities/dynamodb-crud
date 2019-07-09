@@ -88,7 +88,7 @@ const invoke = (db, config = {}) => async (query, options = {}) => {
 
     case 'put':
       const putResult = await db.put(request)
-      return putResult && query.body || null
+      return (putResult && query.body) || null
 
     case 'delete':
       return await existsOrNull(db.delete(request))

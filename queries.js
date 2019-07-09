@@ -65,7 +65,7 @@ const post = context =>
         ConditionExpression: getKeyNotExistsCondition(context),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options,
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options)
       }
     }
   }
@@ -83,7 +83,7 @@ const put = context =>
         ConditionExpression: getKeyExistsCondition(context),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options,
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options)
       }
     }
   }
@@ -117,7 +117,7 @@ const patch = context =>
           { ...key, ...body }
         ),
         ...options,
-        ExpressionAttributeNames: getAttributeNames(context, body, options),
+        ExpressionAttributeNames: getAttributeNames(context, body, options)
       }
     }
   }
@@ -134,7 +134,7 @@ const del = context => {
         ConditionExpression: getKeyExistsCondition(context),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
         ...options,
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
+        ExpressionAttributeNames: getAttributeNames(context, {}, options)
       }
     }
   }
