@@ -22,7 +22,7 @@ describe('dynamodb', () => {
           const posted = await db.invoke(query.post(['a', 'b'], { foo: 123 }))
 
           // Check that post returns new item
-          expect(posted).toEqual({})
+          expect(posted).toEqual({ foo: 123 })
 
           // Check that new item is persisted
           const fetched = await db.invoke(query.get(['a', 'b']))
