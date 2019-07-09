@@ -48,7 +48,7 @@ const getKeyNotExistsCondition = context =>
   `#${context.hashKeyName} <> :${context.hashKeyName} AND ` +
   `#${context.rangeKeyName} <> :${context.rangeKeyName}`
 
-const getKeyConditionExpression = context =>
+const getQueryKeyConditionExpression = context =>
   `#${context.hashKeyName} = :${context.hashKeyName} AND ` +
   `begins_with(#${context.rangeKeyName}, :${context.rangeKeyName})`
 
@@ -63,9 +63,9 @@ const post = context =>
       request: {
         Item: { ...key, ...body },
         ConditionExpression: getKeyNotExistsCondition(context),
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
-        ...options
+        ...options,
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
       }
     }
   }
@@ -81,9 +81,9 @@ const put = context =>
       request: {
         Item: { ...key, ...body },
         ConditionExpression: getKeyExistsCondition(context),
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
-        ...options
+        ...options,
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
       }
     }
   }
@@ -112,12 +112,12 @@ const patch = context =>
         ReturnValues: 'ALL_NEW',
         UpdateExpression: getUpdateExpression(context, body),
         ConditionExpression: getKeyExistsCondition(context),
-        ExpressionAttributeNames: getAttributeNames(context, body, options),
         ExpressionAttributeValues: getExpressionAttributeValues(
           context,
           { ...key, ...body }
         ),
-        ...options
+        ...options,
+        ExpressionAttributeNames: getAttributeNames(context, body, options),
       }
     }
   }
@@ -132,9 +132,9 @@ const del = context => {
       request: {
         Key: key,
         ConditionExpression: getKeyExistsCondition(context),
-        ExpressionAttributeNames: getAttributeNames(context, {}, options),
         ExpressionAttributeValues: getExpressionAttributeValues(context, key),
-        ...options
+        ...options,
+        ExpressionAttributeNames: getAttributeNames(context, {}, options),
       }
     }
   }
@@ -147,7 +147,7 @@ const list = context => (...args) => {
     context,
     action: 'query',
     request: {
-      KeyConditionExpression: getKeyConditionExpression(context),
+      KeyConditionExpression: getQueryKeyConditionExpression(context),
       ExpressionAttributeValues: getExpressionAttributeValues(context, key),
       ...options,
       ExpressionAttributeNames: getAttributeNames(context, {}, options)
@@ -162,7 +162,7 @@ const count = context => (...args) => {
     context,
     action: 'query',
     request: {
-      KeyConditionExpression: getKeyConditionExpression(context),
+      KeyConditionExpression: getQueryKeyConditionExpression(context),
       ExpressionAttributeValues: getExpressionAttributeValues(context, key),
       ExpressionAttributeNames: getAttributeNames(context, {}, options),
       Select: 'COUNT',
