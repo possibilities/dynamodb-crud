@@ -225,6 +225,7 @@ const rest = (config = {}) => {
   }
 
   return {
+    client: db,
     invoke: intercept(invoke(db, config)),
     transactGet: intercept(transactGet(db, config)),
     transactWrite: intercept(transactWrite(db, config)),
