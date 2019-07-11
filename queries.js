@@ -21,6 +21,18 @@ const keyMirror = obj => {
   return mirror
 }
 
+const resolveBody = body => {
+  let resolved = { ...body }
+
+  Object.keys(body).forEach(key => {
+    if (typeof body[key] === 'function') {
+      resolved[key] = body[key]()
+    }
+  })
+
+  return resolved
+}
+
 const getAttributeNames = ({ hashKeyName, rangeKeyName }, body, options) => {
   const data = {
     ...keyMirror(body),
@@ -54,7 +66,8 @@ const getQueryKeyConditionExpression = context =>
 
 const post = context =>
   (...args) => {
-    const [key, body, options = {}] = resolveKey(context, ...args)
+    const [key, rawBody, options = {}] = resolveKey(context, ...args)
+    const body = resolveBody(rawBody)
     return {
       key,
       body,
@@ -72,7 +85,8 @@ const post = context =>
 
 const put = context =>
   (...args) => {
-    const [key, body, options = {}] = resolveKey(context, ...args)
+    const [key, rawBody, options = {}] = resolveKey(context, ...args)
+    const body = resolveBody(rawBody)
     return {
       key,
       body,
@@ -101,7 +115,8 @@ const get = context =>
 
 const patch = context =>
   (...args) => {
-    const [key, body, options = {}] = resolveKey(context, ...args)
+    const [key, rawBody, options = {}] = resolveKey(context, ...args)
+    const body = resolveBody(rawBody)
     return {
       key,
       body,

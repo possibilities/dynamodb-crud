@@ -73,6 +73,17 @@ describe('resolveKey', () => {
         { optionKey: 'optionValue' }
       ])
     })
+
+    test('with function values', () => {
+      const getFoo = () => 'foo'
+      const getBar = () => 'bar'
+      expect(resolveKey(
+        context,
+        [getFoo, getBar]
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foo.bar' }
+      ])
+    })
   })
 
   describe('multiple arrays', () => {
@@ -111,6 +122,20 @@ describe('resolveKey', () => {
         { optionKey: 'optionValue' }
       ])
     })
+
+    test('with function values', () => {
+      const getFoo = () => 'foo'
+      const getBar = () => 'bar'
+      const getFoof = () => 'foof'
+      const getDoof = () => 'doof'
+      expect(resolveKey(
+        context,
+        [getFoo, getBar],
+        [getFoof, getDoof]
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' }
+      ])
+    })
   })
 
   describe('mapped arrays', () => {
@@ -145,6 +170,19 @@ describe('resolveKey', () => {
         { hash: 'foo.bar', range: 'foof.doof' },
         { bodyKey: 'bodyVal' },
         { optionKey: 'optionValue' }
+      ])
+    })
+
+    test('with function values', () => {
+      const getFoo = () => 'foo'
+      const getBar = () => 'bar'
+      const getFoof = () => 'foof'
+      const getDoof = () => 'doof'
+      expect(resolveKey(
+        context,
+        { hash: [getFoo, getBar], range: [getFoof, getDoof] }
+      )).toEqual([
+        { hash: 'foo.bar', range: 'foof.doof' }
       ])
     })
   })

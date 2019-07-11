@@ -64,6 +64,35 @@ describe('queries', () => {
         })
       })
 
+      test('with function values', () => {
+        const query = queries()
+
+        const getBar = () => 'bar'
+
+        expect(query.post(['a', 'b'], { foo: getBar })).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash <> :hash AND #range <> :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            }
+          }
+        })
+      })
+
       test('with options', () => {
         const query = queries()
 
@@ -103,6 +132,39 @@ describe('queries', () => {
       test('basic', () => {
         const query = queries()
         const patchQuery = query.patch(['a', 'b'], { foo: 'bar' })
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'update',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Key: {
+              hash: 'a.b',
+              range: 'a.b'
+            },
+            ReturnValues: 'ALL_NEW',
+            UpdateExpression: 'SET #foo = :foo',
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range',
+              '#foo': 'foo'
+            },
+            ExpressionAttributeValues: {
+              ':foo': 'bar',
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            }
+          }
+        })
+      })
+
+      test('with function values', () => {
+        const query = queries()
+
+        const getBar = () => 'bar'
+        const patchQuery = query.patch(['a', 'b'], { foo: getBar })
 
         expect(patchQuery).toEqual({
           body: { foo: 'bar' },
@@ -172,6 +234,35 @@ describe('queries', () => {
       test('basic', () => {
         const query = queries()
         const patchQuery = query.put(['a', 'b'], { foo: 'bar' })
+
+        expect(patchQuery).toEqual({
+          body: { foo: 'bar' },
+          context: testContext,
+          action: 'put',
+          key: { hash: 'a.b', range: 'a.b' },
+          request: {
+            Item: {
+              hash: 'a.b',
+              range: 'a.b',
+              foo: 'bar'
+            },
+            ConditionExpression: '#hash = :hash AND #range = :range',
+            ExpressionAttributeNames: {
+              '#hash': 'hash',
+              '#range': 'range'
+            },
+            ExpressionAttributeValues: {
+              ':hash': 'a.b',
+              ':range': 'a.b'
+            }
+          }
+        })
+      })
+
+      test('with function values', () => {
+        const query = queries()
+        const getBar = () => 'bar'
+        const patchQuery = query.put(['a', 'b'], { foo: getBar })
 
         expect(patchQuery).toEqual({
           body: { foo: 'bar' },
